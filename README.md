@@ -116,6 +116,19 @@ license, and version of each.
 
 ## Quick start
 
+### Just give Claude the repo URL
+
+Paste this into Claude Code:
+
+```
+Install the Office OS skill from https://github.com/mekapilbasnet/office-os
+— clone it, then run ./install.sh --apply (or install.ps1 --apply on
+Windows) and verify.sh.
+```
+
+Claude clones the repo, runs the installer, and verifies the result. No
+manual steps needed on your end.
+
 ### Linux / macOS / WSL
 
 ```bash

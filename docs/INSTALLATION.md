@@ -1,5 +1,15 @@
 # Installation Guide
 
+## Just give Claude the repo URL
+
+Paste into Claude Code:
+
+```
+Install the Office OS skill from https://github.com/mekapilbasnet/office-os
+— clone it, then run ./install.sh --apply (or install.ps1 --apply on
+Windows) and verify.sh.
+```
+
 ## Linux / macOS / WSL
 
 ```bash

@@ -2,6 +2,16 @@
 
 **Office OS is the main skill.** This distribution installs one `/office-os` skill, its full original references, global model-routing policy, Haiku/Opus subagents and native model status display. Automatic routing is ON by default. `/dynamic-routing` is a control-only command with `off`, `on`, and `status`, not a competing skill.
 
+## Just give Claude the repo URL
+
+Paste into Claude Code:
+
+```
+Install the Office OS skill from https://github.com/mekapilbasnet/office-os
+— clone it, then run ./install.sh --apply (or install.ps1 --apply on
+Windows) and verify.sh.
+```
+
 ## Safe installation (preview first)
 
 Linux/macOS/WSL:
