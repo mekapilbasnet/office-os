@@ -30,6 +30,6 @@ Restart Claude Code as needed; automatic routing applies even without invoking `
 
 Static verification does **not** prove actual model execution. See `office-os/routing-tools/SMOKE_TESTS.md` for opt-in live checks.
 
-## Advanced routing management (v4.3)
+## Advanced routing management
 
 After installation, `/dynamic-routing on|off|status` and `/dynamic-routing profile economy|balanced|quality` work through the installed Office OS manager. Availability fallback is opt-in because it can affect all subagents; `/dynamic-routing fallback status` shows the current setting. `/dynamic-routing compatibility` checks CLI support. See `office-os/routing-tools/RELEASE_CHECKLIST.md` for authenticated live tests and native Windows/macOS release steps.

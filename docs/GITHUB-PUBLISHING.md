@@ -16,7 +16,7 @@
 ```bash
 git init
 git add .
-git commit -m "Initial release: Office OS + Dynamic Routing v4.3"
+git commit -m "Initial release: Office OS + Dynamic Routing"
 git branch -M main
 git remote add origin <YOUR_GITHUB_REPO_URL>
 git push -u origin main

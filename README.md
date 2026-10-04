@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/github-header.svg" alt="Office OS with Dynamic Routing v4.3" width="100%" />
+  <img src="assets/github-header.svg" alt="Office OS with Dynamic Routing" width="100%" />
 </p>
 
 <p align="center">
@@ -7,7 +7,6 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-v4.3-2563eb">
   <img alt="Status" src="https://img.shields.io/badge/status-beta-orange">
   <img alt="Tests" src="https://img.shields.io/badge/tests-42%20passed-16a34a">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Claude%20Code-111827">
@@ -15,7 +14,7 @@
 
 ## What this repository contains
 
-**Office OS + Dynamic Routing v4.3** combines:
+**Office OS + Dynamic Routing** combines:
 
 - **Office OS** as the main skill entry point: `/office-os`
 - **Automatic Dynamic Routing** enabled by default after install

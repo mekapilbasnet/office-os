@@ -21,7 +21,7 @@ The global rule `~/.claude/rules/model-routing.md` applies automatically to regu
 
 Equivalent CLI: `python3 ~/.claude/skills/office-os/routing-tools/routing_manager.py off --apply` (or `on --apply`, `status`).
 
-## v4.3 profile and usage controls
+## Profile and usage controls
 
 - `/dynamic-routing profile economy|balanced|quality`: explicit user selection updates the guarded global rule and state; changes are previewable and reversible. `profile` alone reports current profile.
 - `/dynamic-routing fallback status|none|sonnet|sonnet-haiku`: never silently modify an existing fallback. Changing fallback is opt-in and requires approval because it applies to all subagents. There is no Fable in the proposed chains.
