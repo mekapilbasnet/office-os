@@ -30,14 +30,14 @@
   </g>
   <g>
     <rect x="680" y="398" width="200" height="110" rx="18" fill="#312E81" stroke="#818CF8"/>
-    <text x="708" y="442" fill="#E0E7FF" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Deep Reasoner</text>
+    <text x="708" y="442" fill="#E0E7FF" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700">Deep Reasoner</text>
     <text x="708" y="472" fill="#A5B4FC" font-family="Arial, Helvetica, sans-serif" font-size="18">Opus</text>
   </g>
 
   <g>
     <rect x="940" y="254" width="200" height="110" rx="18" fill="#3F1D0D" stroke="#FB923C"/>
-    <text x="968" y="298" fill="#FFEDD5" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Premium Path</text>
-    <text x="968" y="328" fill="#FDBA74" font-family="Arial, Helvetica, sans-serif" font-size="18">Fable (approval only)</text>
+    <text x="968" y="298" fill="#FFEDD5" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700">Premium Path</text>
+    <text x="968" y="328" fill="#FDBA74" font-family="Arial, Helvetica, sans-serif" font-size="15">Fable (approval only)</text>
   </g>
 
   <path d="M280 230H340" stroke="#64748B" stroke-width="4" stroke-linecap="round"/>
@@ -49,7 +49,7 @@
   <g>
     <rect x="60" y="380" width="540" height="172" rx="20" fill="#111827" stroke="#334155"/>
     <text x="88" y="422" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Operational Controls</text>
-    <text x="88" y="456" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">/dynamic-routing on  •  /dynamic-routing off  •  /dynamic-routing status</text>
+    <text x="88" y="456" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="14">/dynamic-routing on  •  /dynamic-routing off  •  /dynamic-routing status</text>
     <text x="88" y="486" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">/dynamic-routing profile economy|balanced|quality</text>
     <text x="88" y="516" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">/dynamic-routing fallback none|sonnet|sonnet-haiku</text>
   </g>
