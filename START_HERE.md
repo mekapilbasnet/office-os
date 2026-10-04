@@ -32,7 +32,7 @@ Windows PowerShell (Python 3 required):
 
 Existing user settings, unrelated agents and status lines are preserved by default. For a customized pre-existing `office-os` skill or conflicting user rule/agent, the installer STOPS instead of overwriting. Only use `--replace` if you deliberately approve replacing all reported conflicting package-owned files. Exact pristine Office OS files and pristine v3 routing files can be upgraded with backup.
 
-If you have **standalone Dynamic Routing v4 installed**, first use its own manager to preview and uninstall it. The integrated installer blocks concurrent installations to avoid competing global policies. Your v4 backups remain available.
+If you have **standalone Dynamic Routing installed**, first use its own manager to preview and uninstall it. The integrated installer blocks concurrent installations to avoid competing global policies. Your backups remain available.
 
 `CLAUDE_CONFIG_DIR` and `--config-dir` are supported. Installing does not modify an existing `CLAUDE.md`. A new user-level main model is set to Sonnet only if none is already configured, unless you explicitly request `--set-main-model`.
 

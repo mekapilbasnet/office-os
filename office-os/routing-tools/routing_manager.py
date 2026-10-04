@@ -162,7 +162,7 @@ def plan(cfg, args):
     changes, conflicts, warnings = [], [], []
     proposed_files = {}
     if (cfg / 'dynamic-routing/state.json').is_file():
-        conflicts.append('Standalone Dynamic Routing v4 is already managed here. Preview and uninstall it with its original manager before installing Office OS, to avoid competing global rules.')
+        conflicts.append('Standalone Dynamic Routing is already managed here. Preview and uninstall it with its original manager before installing Office OS, to avoid competing global rules.')
     enabled = (state or {}).get('enabled', True)
     for dest, src in OWNED.items():
         expected = active_rule_bytes(enabled, (state or {}).get('profile','balanced')) if dest == 'rules/model-routing.md' else (SOURCE / src).read_bytes()
@@ -175,7 +175,7 @@ def plan(cfg, args):
         elif existing is None:
             status = 'create'
         elif safe_previous or (last_owned and last_owned == current_hash):
-            status = 'upgrade'  # prior v3 pristine or v4 intact
+            status = 'upgrade'  # prior v3 pristine or standalone install intact
         elif args.replace:
             status = 'explicit-replace'
         else:

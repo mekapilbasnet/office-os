@@ -176,14 +176,14 @@ class ManagerTests(unittest.TestCase):
         self.assertEqual(self.cli('uninstall','--apply').returncode,0)
         self.assertIn('USER CUSTOM WORK',skill.read_text())
 
-    def test_separate_v4_installer_must_be_removed_first(self):
+    def test_separate_standalone_installer_must_be_removed_first(self):
         old=self.cfg/'dynamic-routing/state.json'
         old.parent.mkdir(parents=True)
         old.write_text('{}')
         result=self.cli('install','--apply')
         self.assertNotEqual(result.returncode,0)
         self.assertFalse((self.cfg/'skills/office-os/SKILL.md').exists())
-        self.assertIn('Standalone Dynamic Routing v4',result.stdout)
+        self.assertIn('Standalone Dynamic Routing',result.stdout)
 
     def test_failed_verify_missing_original_office_reference(self):
         self.assertEqual(self.cli('install','--apply').returncode,0)

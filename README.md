@@ -30,7 +30,8 @@
 
 Also bundled, under `skills/`: three additional Claude Code skills
 (`brand`, `design`, `ui-ux-pro-max`) vendored from an upstream project,
-unmodified. See [skills/README.md](skills/README.md) and
+unmodified. The Office OS installer does not install these companion skills;
+they are available separately in this repository. See [skills/README.md](skills/README.md) and
 [skills/THIRD-PARTY-NOTICES.md](skills/THIRD-PARTY-NOTICES.md) for origin,
 license, and version.
 
@@ -101,6 +102,7 @@ license, and version.
 │   ├── agents/
 │   ├── references/
 │   └── routing-tools/
+├── skills/                   # Vendored brand, design, and UI/UX skills
 ├── tests/                    # Regression and integration tests
 ├── install.sh / install.ps1  # Installers
 ├── verify.sh / verify.ps1    # Static verification
@@ -115,6 +117,14 @@ license, and version.
 
 ## Quick start
 
+### Prerequisites
+
+- Claude Code for using the installed skill and routing controls
+- Python 3 available as `python3` on Linux/macOS/WSL, or `python`/`py` on Windows
+- Git to clone this repository (or download and extract a ZIP)
+
+The installer uses Python's standard library; no Python packages are required.
+
 ### Just give Claude the repo URL
 
 Paste this into Claude Code:
@@ -122,7 +132,7 @@ Paste this into Claude Code:
 ```
 Install the Office OS skill from https://github.com/mekapilbasnet/office-os
 — clone it, then run ./install.sh --apply (or install.ps1 --apply on
-Windows) and verify.sh.
+Windows), then run ./verify.sh (or .\verify.ps1 on Windows).
 ```
 
 Claude clones the repo, runs the installer, and verifies the result. No
@@ -131,6 +141,8 @@ manual steps needed on your end.
 ### Linux / macOS / WSL
 
 ```bash
+git clone https://github.com/mekapilbasnet/office-os.git
+cd office-os
 ./install.sh          # preview only
 ./install.sh --apply  # install
 ./verify.sh           # verify
@@ -139,6 +151,8 @@ manual steps needed on your end.
 ### Windows PowerShell
 
 ```powershell
+git clone https://github.com/mekapilbasnet/office-os.git
+Set-Location office-os
 .\install.ps1
 .\install.ps1 --apply
 .\verify.ps1
@@ -149,6 +163,16 @@ After installation:
 - Restart Claude Code
 - Dynamic Routing is **ON** by default
 - Use `/office-os` as the main skill
+
+The default destination is `~/.claude`. Set `CLAUDE_CONFIG_DIR` or pass
+`--config-dir` to target a different Claude Code configuration directory.
+Existing main-model settings and custom status lines are preserved by default.
+Customized package files cause the installer to stop; review the reported
+conflicts before choosing `--replace`.
+
+If standalone Dynamic Routing is already installed, preview and uninstall it
+with its own manager before installing this integrated package. See
+[START_HERE.md](START_HERE.md) for upgrade and conflict details.
 
 ### Recommended companion: Ponytail
 
@@ -206,10 +230,16 @@ This repository includes:
 Run local tests:
 
 ```bash
-python3 -m pytest tests -q
+python3 -m unittest discover -s tests -v
 ```
 
-> Live authenticated routing tests are intentionally opt-in and are not run automatically by CI.
+On Windows, use `python` or `py` in place of `python3`.
+
+Static verification checks installed files and configuration; it does not prove
+which model Claude Code actually executes. Live authenticated routing tests are
+opt-in and are not run automatically by CI. See the
+[smoke test guide](office-os/routing-tools/SMOKE_TESTS.md) and
+[release checklist](office-os/routing-tools/RELEASE_CHECKLIST.md).
 
 ---
 

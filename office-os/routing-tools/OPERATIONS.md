@@ -10,7 +10,7 @@ When a user requests `/office-os routing <command>`:
 4. Never run `--apply`, `--replace`, `--replace-status-lines`, or `--set-main-model` without approval matching the requested operation. For existing unrelated configuration, prefer to preserve it.
 5. `verify` is static. `diagnose` reads accessible config and flags potential overrides but cannot prove actual runtime model selection. Never print settings secrets or full backups.
 6. For rollback, show the backup and preview first; refuse to clobber later user edits. For smoke-test, read `SMOKE_TESTS.md` beside the manager, do not pass `smoke-test` to it, and obtain permission before live tests that consume model usage.
-7. If prior standalone Dynamic Routing v4 is installed, first preview and uninstall it with its original manager; do not stack conflicting always-on policies. The Office OS installer detects and refuses that state. Pristine v3 policy/agents can be upgraded directly.
+7. If prior standalone Dynamic Routing is installed, first preview and uninstall it with its original manager; do not stack conflicting always-on policies. The Office OS installer detects and refuses that state. Pristine v3 policy/agents can be upgraded directly.
 8. Don't claim a skill can force the main model, override managed/project settings, or guarantee premium-model approval against manual user overrides.
 
 For everyday Office OS work, see `references/model-routing.md`.
