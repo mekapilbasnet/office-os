@@ -28,6 +28,13 @@
 
 > Dynamic Routing is **auto-activated** after installation. You do not need to run a separate routing skill.
 
+Also bundled, under `skills/`: eight additional Claude Code skills
+(`banner-design`, `brand`, `design`, `design-system`, `slides`, `superset`,
+`ui-styling`, `ui-ux-pro-max`) vendored from upstream projects, unmodified.
+See [skills/README.md](skills/README.md) and
+[skills/THIRD-PARTY-NOTICES.md](skills/THIRD-PARTY-NOTICES.md) for origin,
+license, and version of each.
+
 ---
 
 ## Visual overview

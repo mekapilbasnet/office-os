@@ -1,5 +1,12 @@
 # Office OS: Model Routing and Observability
 
+> **This is the installer template**, not necessarily what's live. The
+> installer (`office-os/routing-tools/routing_manager.py`) derives
+> `~/.claude/rules/model-routing.md` from this file. If that live file's
+> `ROUTING_STATE` line or body text doesn't match what's here, the installer
+> hasn't been (re)applied on that machine — run `/office-os routing diagnose`
+> to check, `/office-os routing plan` to preview a sync.
+
 ROUTING_STATE: ON
 
 This automatically loaded policy applies to ordinary Claude Code work when enabled; explicit `/office-os` invocation is not required. If the rule is replaced by the installed OFF rule, do not apply its model-routing preferences.

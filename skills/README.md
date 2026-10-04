@@ -1,6 +1,11 @@
 # User-scope Claude Code skills
 
-Available in every project on this machine.
+Available in every project on this machine. Everything here except
+`office-os` (repo root) is vendored from an upstream project — see
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for origin, license, and
+version of each pack. Don't hand-edit files inside a vendored skill
+directory; re-pull from upstream instead, so local edits don't silently
+diverge from the source.
 
 ## ui-ux-pro-max pack
 
@@ -35,3 +40,15 @@ No `SessionStart`/`PreToolUse` hooks, no credential or env-var access. The only
 outbound hosts in the shipped scripts are `fonts.googleapis.com`, `pexels.com` and
 `github.com` (font catalogue refresh and stock backgrounds). The `stack/.claude/settings.json`
 in the upstream repo is a sample project template and is **not** installed.
+
+## superset plugin
+
+`superset` — orchestration plugin, 13 sub-skills under `skills/superset/skills/`
+(`10x`, `automate`, `browser`, `computer`, `contribute`, `doctor`, `feedback`,
+`integrations`, `orchestrate`, `page`, `plugins`, `setup`, `standup`).
+
+| | |
+| --- | --- |
+| Upstream | https://github.com/superset-sh/superset |
+| Homepage | https://docs.superset.sh |
+| License | MIT |
