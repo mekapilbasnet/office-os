@@ -150,6 +150,19 @@ After installation:
 - Dynamic Routing is **ON** by default
 - Use `/office-os` as the main skill
 
+### Recommended companion: Ponytail
+
+Office OS routes to **Ponytail** when it's installed, for broad codebase
+audits, debt analysis, and keeping generated code minimal. Not bundled here
+— install it separately if you want that:
+
+```
+/plugin marketplace add DietrichGebert/ponytail
+/plugin install ponytail@ponytail
+```
+
+See https://github.com/DietrichGebert/ponytail.
+
 ---
 
 ## Commands
