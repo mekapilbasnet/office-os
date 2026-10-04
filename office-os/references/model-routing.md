@@ -178,7 +178,7 @@ correctness
 + minimal interruption
 ```
 
-## Routing observability and truthful reporting (v4)
+## Routing observability and truthful reporting
 
 The installed status line reports the main session's actual `model.display_name`, while the installed subagent status line reports each agent's actual **resolved** `model` when supplied by Claude Code. The display is the source of truth, not a model name guessed in prose.
 
@@ -188,7 +188,7 @@ The installed status line reports the main session's actual `model.display_name`
 - Inspect `/model`, `/status` and active task details when a mismatch is suspected. CLI flags, provider mappings, managed/project/local settings and environment overrides can alter the result.
 - If a requested model is unavailable, either continue locally on an appropriate permitted model with disclosure or request guidance. Never silently fall back to approval-only Fable or another premium tier.
 
-## Task thresholds, bounded delegation and handoffs (v4)
+## Task thresholds, bounded delegation and handoffs
 
 - Skip separate Explore runs for trivial, already-understood edits. Start a focused Explore task when discovery would otherwise consume substantial Sonnet context.
 - Escalate to deep-reasoner only for material uncertainty, security or data risk, nontrivial architectural decisions, or repeated failed attempts. Do not equate codebase size with difficulty.
@@ -197,7 +197,7 @@ The installed status line reports the main session's actual `model.display_name`
 - After Opus investigation, use Sonnet for routine changes and testing unless actual implementation complexity justifies otherwise.
 - No skill or instruction-only setup can guarantee enforcement of every future manual model selection, built-in fallback, managed policy or provider behavior.
 
-## Optional routing profiles (v4)
+## Optional routing profiles
 
 Installed default is **Balanced**. The ACTIVE installed profile is specified in the appended PROFILE_STATE footer. Change with `/dynamic-routing profile economy|balanced|quality`:
 

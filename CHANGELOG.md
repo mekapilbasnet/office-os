@@ -1,3 +1,12 @@
+# Unreleased
+
+- Added a `skills/` bundle (third-party, vendored unmodified): `brand`, `design`, `ui-ux-pro-max`. See `skills/THIRD-PARTY-NOTICES.md`.
+- Removed `banner-design`, `slides`, `design-system`, `ui-styling`, `superset` from that bundle as redundant or out of scope; `design` already covered banner/slide generation, `ui-ux-pro-max` already covered tokens/components.
+- Added a quick-install option: give Claude the repo URL and it clones + installs + verifies.
+- Documented Ponytail as an optional companion (not bundled) for codebase audits and minimal-code generation.
+- Dropped the `v4.3` version suffix from the product name in docs and the header image; routing feature version numbers below are unaffected.
+- Repo audit fixes: de-duplicated vendored reference files (symlinked, now plain files again after the redundant skills were removed), removed a stray committed coverage artifact, marked `office-os/references/model-routing.md` as the installer template vs. the live rule.
+
 # v4.3
 
 - Actual persisted Economy/Balanced/Quality routing profiles and guarded rollback.

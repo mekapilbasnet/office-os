@@ -1,4 +1,4 @@
-# Install Office OS with integrated Claude Dynamic Routing v4
+# Install Office OS with integrated Claude Dynamic Routing
 
 **Office OS is the main skill.** This distribution installs one `/office-os` skill, its full original references, global model-routing policy, Haiku/Opus subagents and native model status display. Automatic routing is ON by default. `/dynamic-routing` is a control-only command with `off`, `on`, and `status`, not a competing skill.
 
