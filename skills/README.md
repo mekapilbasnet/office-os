@@ -9,8 +9,11 @@ diverge from the source.
 
 ## ui-ux-pro-max pack
 
-Seven skills — `banner-design`, `brand`, `design`, `design-system`, `slides`,
-`ui-styling`, `ui-ux-pro-max` — vendored from one upstream repo.
+Three skills kept — `brand`, `design`, `ui-ux-pro-max` — vendored from one
+upstream repo. `banner-design`, `design-system`, `slides`, and `ui-styling`
+were dropped: `design` already covers banner and slide generation in full,
+and `ui-ux-pro-max` already covers design tokens and component styling
+across more stacks than `design-system`/`ui-styling` did.
 
 | | |
 | --- | --- |
@@ -19,18 +22,19 @@ Seven skills — `banner-design`, `brand`, `design`, `design-system`, `slides`,
 | Installed | 2026-09-03 |
 | License | MIT — see the upstream `LICENSE` |
 
-Installed by copying the repo's `.claude/skills/*` here, which is what
-`uipro init --ai claude --global` does. The alternative routes are
-`/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill` (updatable through
-Claude Code) or `npm i -g ui-ux-pro-max-cli`.
-
 ### Updating
 
 ```bash
 git clone --depth 1 https://github.com/nextlevelbuilder/ui-ux-pro-max-skill /tmp/uipm
-rm -rf ~/.claude/skills/{banner-design,brand,design,design-system,slides,ui-styling,ui-ux-pro-max}
-cp -r /tmp/uipm/.claude/skills/* ~/.claude/skills/
+rm -rf ~/.claude/skills/{brand,design,ui-ux-pro-max}
+cp -r /tmp/uipm/.claude/skills/{brand,design,ui-ux-pro-max} ~/.claude/skills/
 ```
+
+`design/references/` has a few files (slide and banner reference docs) that
+the upstream pack also ships under its own `slides`/`banner-design`
+directories — those aren't installed here, so after an update, diff
+`design/references/` against upstream's `slides`/`banner-design` folders by
+hand if you want the latest wording.
 
 Then bump the version row above.
 
@@ -40,15 +44,3 @@ No `SessionStart`/`PreToolUse` hooks, no credential or env-var access. The only
 outbound hosts in the shipped scripts are `fonts.googleapis.com`, `pexels.com` and
 `github.com` (font catalogue refresh and stock backgrounds). The `stack/.claude/settings.json`
 in the upstream repo is a sample project template and is **not** installed.
-
-## superset plugin
-
-`superset` — orchestration plugin, 13 sub-skills under `skills/superset/skills/`
-(`10x`, `automate`, `browser`, `computer`, `contribute`, `doctor`, `feedback`,
-`integrations`, `orchestrate`, `page`, `plugins`, `setup`, `standup`).
-
-| | |
-| --- | --- |
-| Upstream | https://github.com/superset-sh/superset |
-| Homepage | https://docs.superset.sh |
-| License | MIT |

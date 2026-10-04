@@ -1,13 +1,12 @@
 # Third-party notices
 
 Everything under `skills/` except this file and `README.md` is vendored from
-upstream projects, unmodified except where noted. Office OS itself
+an upstream project, unmodified except where noted. Office OS itself
 (`office-os/`) is original to this repository and not covered here.
 
 ## ui-ux-pro-max pack
 
-`banner-design`, `brand`, `design`, `design-system`, `slides`, `ui-styling`,
-`ui-ux-pro-max`
+`brand`, `design`, `ui-ux-pro-max`
 
 | | |
 | --- | --- |
@@ -16,24 +15,19 @@ upstream projects, unmodified except where noted. Office OS itself
 | License | MIT — see upstream repository's `LICENSE` |
 | Installed | 2026-09-03 |
 
-`skills/design/references/` contains symlinks into `skills/slides/` and
-`skills/banner-design/` for files the upstream pack ships twice — same
-content, single file on disk, both skills still resolve it.
-
-## superset
-
-`superset` (plugin, 13 sub-skills under `skills/superset/skills/`)
-
-| | |
-| --- | --- |
-| Upstream | https://github.com/superset-sh/superset |
-| Homepage | https://docs.superset.sh |
-| License | MIT |
+The upstream pack also ships `banner-design`, `design-system`, `slides`, and
+`ui-styling` as standalone skills — dropped from this repo as redundant:
+`design` already includes their banner/slide generation, and
+`ui-ux-pro-max` already includes design tokens and component styling for
+more stacks than `design-system`/`ui-styling` covered. A few of `design`'s
+reference files under `skills/design/references/` (slide and banner wording)
+originated in those dropped directories; they're kept as plain files now,
+not symlinks.
 
 ## ui-styling fonts
 
-`skills/ui-styling/canvas-fonts/` ships Google Fonts, each under the SIL
-Open Font License — see the paired `*-OFL.txt` next to each `.ttf`.
+Removed along with `ui-styling` — this repo no longer ships
+`canvas-fonts/`.
 
 ## Updating a vendored pack
 
