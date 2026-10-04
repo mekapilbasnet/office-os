@@ -1,0 +1,57 @@
+name: Office OS Dynamic Routing offline regression
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  offline-tests:
+    name: Static tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Python regression tests
+        run: python -m unittest discover -s tests -v
+      - name: Bash install / verify smoke
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CLAUDE_CONFIG_DIR="$(mktemp -d)"
+          ./install.sh
+          ./install.sh --apply
+          ./verify.sh
+          python3 office-os/routing-tools/routing_manager.py profile quality --apply
+          python3 office-os/routing-tools/routing_manager.py off --apply
+          python3 office-os/routing-tools/routing_manager.py on --apply
+          python3 office-os/routing-tools/routing_manager.py verify
+          python3 office-os/routing-tools/routing_manager.py uninstall --apply
+      - name: Native PowerShell install / verify smoke
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:CLAUDE_CONFIG_DIR = Join-Path $env:RUNNER_TEMP 'isolated-claude-officeos'
+          ./install.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./install.ps1 --apply
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./verify.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python office-os/routing-tools/routing_manager.py profile quality --apply
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python office-os/routing-tools/routing_manager.py off --apply
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python office-os/routing-tools/routing_manager.py on --apply
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python office-os/routing-tools/routing_manager.py verify
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python office-os/routing-tools/routing_manager.py uninstall --apply
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -1,0 +1,16 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+Thumbs.db
+.venv/
+venv/
+dist/
+build/
+*.zip
+coverage.xml
+htmlcov/
+.idea/
+.vscode/

@@ -1,0 +1,56 @@
+<svg width="1200" height="620" viewBox="0 0 1200 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="620" rx="24" fill="#0F172A"/>
+  <text x="60" y="74" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800">Routing Overview</text>
+  <text x="60" y="108" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="20">Office OS stays the main skill. Dynamic Routing decides which model pattern to use.</text>
+
+  <g>
+    <rect x="60" y="170" width="220" height="120" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="88" y="214" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Incoming Task</text>
+    <text x="88" y="248" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">User request enters</text>
+    <text x="88" y="272" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">Claude Code session</text>
+  </g>
+
+  <g>
+    <rect x="340" y="150" width="260" height="160" rx="20" fill="#0B1220" stroke="#38BDF8"/>
+    <text x="368" y="196" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Office OS Router</text>
+    <text x="368" y="228" fill="#93C5FD" font-family="Arial, Helvetica, sans-serif" font-size="16">Policies + profiles + toggles</text>
+    <text x="368" y="260" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="15">• auto on/off</text>
+    <text x="368" y="284" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="15">• economy / balanced / quality</text>
+  </g>
+
+  <g>
+    <rect x="680" y="110" width="200" height="110" rx="18" fill="#052E16" stroke="#22C55E"/>
+    <text x="708" y="154" fill="#DCFCE7" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Explore</text>
+    <text x="708" y="184" fill="#86EFAC" font-family="Arial, Helvetica, sans-serif" font-size="18">Haiku</text>
+  </g>
+  <g>
+    <rect x="680" y="254" width="200" height="110" rx="18" fill="#082F49" stroke="#38BDF8"/>
+    <text x="708" y="298" fill="#E0F2FE" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Implement</text>
+    <text x="708" y="328" fill="#7DD3FC" font-family="Arial, Helvetica, sans-serif" font-size="18">Sonnet</text>
+  </g>
+  <g>
+    <rect x="680" y="398" width="200" height="110" rx="18" fill="#312E81" stroke="#818CF8"/>
+    <text x="708" y="442" fill="#E0E7FF" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Deep Reasoner</text>
+    <text x="708" y="472" fill="#A5B4FC" font-family="Arial, Helvetica, sans-serif" font-size="18">Opus</text>
+  </g>
+
+  <g>
+    <rect x="940" y="254" width="200" height="110" rx="18" fill="#3F1D0D" stroke="#FB923C"/>
+    <text x="968" y="298" fill="#FFEDD5" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Premium Path</text>
+    <text x="968" y="328" fill="#FDBA74" font-family="Arial, Helvetica, sans-serif" font-size="18">Fable (approval only)</text>
+  </g>
+
+  <path d="M280 230H340" stroke="#64748B" stroke-width="4" stroke-linecap="round"/>
+  <path d="M600 230H640V165H680" stroke="#64748B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M600 230H640V309H680" stroke="#64748B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M600 230H640V453H680" stroke="#64748B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M880 309H940" stroke="#64748B" stroke-width="4" stroke-linecap="round"/>
+
+  <g>
+    <rect x="60" y="380" width="540" height="172" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="88" y="422" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Operational Controls</text>
+    <text x="88" y="456" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">/dynamic-routing on  •  /dynamic-routing off  •  /dynamic-routing status</text>
+    <text x="88" y="486" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">/dynamic-routing profile economy|balanced|quality</text>
+    <text x="88" y="516" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="16">/dynamic-routing fallback none|sonnet|sonnet-haiku</text>
+  </g>
+</svg>

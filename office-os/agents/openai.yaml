@@ -1,0 +1,6 @@
+interface:
+  display_name: "Office OS"
+  short_description: "Coordinate full-lifecycle software organization work"
+  default_prompt: "Use $office-os to classify, route, execute, verify, and report this request with only the disciplines it needs."
+policy:
+  allow_implicit_invocation: true

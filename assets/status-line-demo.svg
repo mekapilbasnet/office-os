@@ -1,0 +1,14 @@
+<svg width="1200" height="340" viewBox="0 0 1200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="340" rx="24" fill="#0B1220"/>
+  <text x="48" y="62" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="800">Model Visibility</text>
+  <rect x="48" y="96" width="1104" height="54" rx="14" fill="#111827" stroke="#334155"/>
+  <text x="72" y="130" fill="#E2E8F0" font-family="Consolas, Menlo, monospace" font-size="24">Model: Sonnet  |  context: 24%  |  est. API: $0.18  |  routing: balanced</text>
+  <rect x="48" y="186" width="520" height="108" rx="16" fill="#111827" stroke="#38BDF8"/>
+  <text x="74" y="220" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Explore [Haiku]</text>
+  <text x="420" y="220" fill="#22C55E" font-family="Arial, Helvetica, sans-serif" font-size="16">Running</text>
+  <text x="74" y="254" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="16">Finding payroll calculation logic</text>
+  <rect x="632" y="186" width="520" height="108" rx="16" fill="#111827" stroke="#818CF8"/>
+  <text x="658" y="220" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">deep-reasoner [Opus]</text>
+  <text x="1018" y="220" fill="#22C55E" font-family="Arial, Helvetica, sans-serif" font-size="16">Running</text>
+  <text x="658" y="254" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="16">Investigating edge-case reconciliation logic</text>
+</svg>
