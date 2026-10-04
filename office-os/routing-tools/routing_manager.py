@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Office OS + Dynamic Routing v4: reversible, conflict-aware, standard-library manager.
+"""Office OS + Dynamic Routing: reversible, conflict-aware, standard-library manager.
 
 Use `plan` before `install --apply`. Never modify unrelated Claude Code settings.
 The Office OS skill is the parent; this tool manages its model-routing installation.
@@ -627,7 +627,7 @@ def do_compatibility(cfg, strict=False):
         print('SKIPPED: Cannot verify installed Claude Code CLI; requires target machine.')
         return 2 if strict else 0
     if version < (2, 1, 257):
-        print('UNSUPPORTED: Upgrade Claude Code before enabling all v4.3 features.')
+        print('UNSUPPORTED: Upgrade Claude Code before enabling all routing features.')
         return 1
     print('PASS  CLI version meets recommended baseline. Provider/model access remains unverified.')
     return 0

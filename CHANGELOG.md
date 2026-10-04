@@ -20,11 +20,11 @@
 ## Office OS + Dynamic Routing v4 integration
 
 - Preserved all original Office OS skill references and agent metadata.
-- Added v4 model routing as Office OS reference, not a competing second skill.
+- Added model routing as an Office OS reference, not a competing second skill.
 - Embedded safe installer/verification/rollback into the Office OS skill's routing tools.
 - Installed persistent model policy and read-only Haiku/Opus subagents with observability scripts.
 - Added backup-safe upgrade from pristine Office OS + pristine v3 routing files.
-- Blocked accidental simultaneous install over a separately managed Dynamic Routing v4 setup.
+- Blocked accidental simultaneous install over a separately managed standalone Dynamic Routing setup.
 - Preserved existing main model and custom status lines by default.
 
 ## v4.2: automatic activation and toggles
