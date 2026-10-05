@@ -39,25 +39,13 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $env:CLAUDE_CONFIG_DIR = Join-Path $env:RUNNER_TEMP 'isolated-claude-officeos'
-          $env:OFFICE_OS_DEBUG = '1'
-          Write-Host "=== CLAUDE_CONFIG_DIR: $env:CLAUDE_CONFIG_DIR ==="
-          Write-Host "=== install.ps1 (preview) ==="
           ./install.ps1
-          Write-Host "=== exit code: $LASTEXITCODE ==="
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Write-Host "=== install.ps1 --apply ==="
           ./install.ps1 --apply
-          Write-Host "=== exit code: $LASTEXITCODE ==="
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Write-Host "=== state.json after install --apply ==="
-          Get-ChildItem -Recurse (Join-Path $env:CLAUDE_CONFIG_DIR 'office-os-routing') -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
-          Write-Host "=== verify.ps1 ==="
           ./verify.ps1
-          Write-Host "=== exit code: $LASTEXITCODE ==="
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Write-Host "=== profile quality --apply ==="
           python office-os/routing-tools/routing_manager.py profile quality --apply
-          Write-Host "=== exit code: $LASTEXITCODE ==="
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python office-os/routing-tools/routing_manager.py off --apply
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
