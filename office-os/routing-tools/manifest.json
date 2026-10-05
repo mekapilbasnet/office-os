@@ -1,6 +1,6 @@
 {
   "name": "office-os-integrated-dynamic-routing",
-  "version": "4.3.0-office",
+  "version": "1.0.0-office",
   "entrypoint": "START_HERE.md",
   "scope": "user",
   "skill": "office-os",
