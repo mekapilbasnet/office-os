@@ -39,6 +39,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $env:CLAUDE_CONFIG_DIR = Join-Path $env:RUNNER_TEMP 'isolated-claude-officeos'
+          $env:OFFICE_OS_DEBUG = '1'
           Write-Host "=== CLAUDE_CONFIG_DIR: $env:CLAUDE_CONFIG_DIR ==="
           Write-Host "=== install.ps1 (preview) ==="
           ./install.ps1
