@@ -1,0 +1,10 @@
+[
+  {"request": "Fix a typo in a button label", "mode": "Direct", "risk": "Low", "route": "Bug"},
+  {"request": "Normal bug in a form", "mode": "Standard", "risk": "Moderate", "route": "Bug", "skills": ["investigate-first", "systematic-debugging", "surgical-patch"]},
+  {"request": "Change payroll calculation", "mode": "Full lifecycle", "risk": "High", "route": "Feature", "skills": ["writing-plans", "lean-build"]},
+  {"request": "Add a database column with backfill", "mode": "Full lifecycle", "risk": "High", "route": "Database change", "skills": ["migration"]},
+  {"request": "Clean up a module without changing behavior", "mode": "Standard", "risk": "Moderate", "route": "Refactor", "skills": ["safe-refactor"]},
+  {"request": "Redesign the settings screen", "mode": "Standard", "risk": "Moderate", "route": "UI redesign", "skills": ["ui-ux-pro-max"]},
+  {"request": "Production outage affecting users", "mode": "Incident", "risk": "Critical", "route": "High-risk review"},
+  {"request": "Review auth change before merge", "mode": "Standard", "risk": "High", "route": "High-risk review", "skills": ["security-review"]}
+]

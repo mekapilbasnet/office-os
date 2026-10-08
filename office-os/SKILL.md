@@ -56,7 +56,7 @@ Determine:
 7. the smallest set of disciplines and skills that materially improve the outcome.
 8. for a Claude Code session, which model (or no subagent) is justified after the Office OS workflow is selected.
 
-For detailed classification and skill selection, read [references/routing.md](references/routing.md).
+For detailed classification and skill selection, read [references/routing.md](references/routing.md). To see which named specialist skills are installed, run `python3 ${CLAUDE_CONFIG_DIR:-~/.claude}/skills/office-os/routing-tools/skills_check.py`; a missing skill is never a blocker.
 
 ## Scale the workflow
 
@@ -106,6 +106,7 @@ Office OS owns model routing as one part of its orchestration. **Before applying
 - Discovery, business analysis, UI/UX, architecture, engineering, data, and AI standards: [references/product-delivery.md](references/product-delivery.md)
 - QA, security, privacy, accessibility, performance, reliability, vendor, access, and continuity assurance: [references/assurance.md](references/assurance.md)
 - Decision rights, ownership, departments, memory, governance, and conditional functions: [references/governance.md](references/governance.md)
+- Postmortem, release notes, rollback plan, and decision record templates: [references/templates.md](references/templates.md)
 - Complete `/office:*` command map: [references/command-surface.md](references/command-surface.md)
 - Task contracts, readiness, completion, validation, evidence labels, and final reporting: [references/evidence-delivery.md](references/evidence-delivery.md)
 

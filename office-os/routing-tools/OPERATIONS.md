@@ -31,3 +31,7 @@ Equivalent CLI: `python3 ~/.claude/skills/office-os/routing-tools/routing_manage
 
 - `history`: display only sanitized usage snapshots previously recorded by opt-in `usage --record`. This is not an automatic task-decision log.
 - `export --output path.json`: create a nonsecret portable settings snapshot (profile, routing state, and recognized fallback). Import is intentionally manual to avoid overwriting a different computer's local settings.
+
+## Skill inventory and stale-name check
+
+`python3 ~/.claude/skills/office-os/routing-tools/skills_check.py` lists which specialist skills named in the routing guide are installed. It is advisory. `--check-removed` exits non-zero if a reference file still names a skill listed in `removed_skills` in `manifest.json`; CI runs this through the test suite.

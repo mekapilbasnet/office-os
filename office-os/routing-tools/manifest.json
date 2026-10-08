@@ -7,7 +7,8 @@
   "default_main_model": "sonnet",
   "agents": {
     "Explore": "haiku",
-    "deep-reasoner": "opus"
+    "deep-reasoner": "opus",
+    "reviewer": "sonnet"
   },
   "premium_model": "fable",
   "premium_requires_per_task_approval": true,
@@ -42,20 +43,30 @@
     "references/model-routing.md",
     "references/product-delivery.md",
     "references/routing.md",
+    "references/templates.md",
     "references/workflows.md",
     "routing-tools/OPERATIONS.md",
+    "routing-tools/RELEASE_CHECKLIST.md",
     "routing-tools/SMOKE_TESTS.md",
     "routing-tools/agents/Explore.md",
     "routing-tools/agents/deep-reasoner.md",
+    "routing-tools/agents/reviewer.md",
     "routing-tools/commands/dynamic-routing.md",
     "routing-tools/manifest.json",
     "routing-tools/routing_manager.py",
+    "routing-tools/scripts/live_smoke.py",
     "routing-tools/scripts/statusline.py",
     "routing-tools/scripts/subagent_statusline.py",
-    "routing-tools/usage_report.py",
-    "routing-tools/scripts/live_smoke.py",
-    "routing-tools/RELEASE_CHECKLIST.md"
+    "routing-tools/skills_check.py",
+    "routing-tools/usage_report.py"
   ],
   "minimum_recommended_claude_code": "2.1.257",
-  "fallback_default": "preserve-existing"
+  "fallback_default": "preserve-existing",
+  "removed_skills": [
+    "banner-design",
+    "slides",
+    "design-system",
+    "ui-styling",
+    "superset"
+  ]
 }

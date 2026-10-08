@@ -30,6 +30,7 @@ Use these roles when the named skills are installed. Absence of a named skill is
 | Debugging | `systematic-debugging` | `bugs`, `qa-handover` for defect artifacts | Find root cause before patching |
 | Testing | `test-driven-development` where it improves design or prevents regression | Playwright/API and k6 skills for E2E/performance | Use the repository's existing tools first |
 | QA handover | Project `qa-handover` skill or template | Office OS generic handover from `workflows.md` | Use project format when one exists; do not duplicate it |
+| Independent review | `reviewer` agent (read-only, Sonnet) | Use for pre-release or pre-merge checks when a second read adds value | Do not use for routine edits |
 | Code review | `code-review` | `security-review`, `verification-quality`, `ponytail-review` for distinct specialist questions | Avoid duplicate general reviews |
 | Verification | `verification-before-completion` | `caveman-evidence-review` or `verify-and-stop` in Caveman mode | Never claim success without executed evidence |
 | Branch/release | `finishing-a-development-branch` | GitHub skills when remote repository action is requested | Do not push, merge, or release without authorization |
@@ -45,7 +46,7 @@ Use these roles when the named skills are installed. Absence of a named skill is
 
 | Task signal | Useful skills when installed |
 | --- | --- |
-| UI/UX | `ui-ux-pro-max`, `design-system`, `frontend-design`, `ui-styling`; add accessibility specialist for meaningful UI |
+| UI/UX | `ui-ux-pro-max`, `design`, `brand`, `frontend-design`; add accessibility specialist for meaningful UI |
 | Accessibility | `accessibility-agents` or equivalent WCAG/assistive-technology skill |
 | Security | `security-review`; add OWASP specialist for auth, APIs, uploads, sensitive data, dependencies, or AI/agent surfaces |
 | QA automation | Playwright/E2E/API test specialist; REST Assured for Java API suites where it matches the repo |
