@@ -46,19 +46,20 @@ Edit `docs/brand-guidelines.md`:
 
 Run the sync script:
 ```bash
-node .claude/skills/brand/scripts/sync-brand-to-tokens.cjs
+node ~/.claude/skills/brand/scripts/sync-brand-to-tokens.cjs
 ```
 
-This will:
-- Update `assets/design-tokens.json` with new color names and values
-- Regenerate `assets/design-tokens.css` with correct CSS variables
+Run it from the project root. It will:
+- Update `assets/design-tokens.json` with the new colors (creating it from the bundled starter tokens, and the `assets/` folder, if missing)
+- Generate `assets/design-tokens.css` (CSS custom properties) directly from that JSON
+- Set the token file's `brand` name from the guideline title when it has one (otherwise leave it unchanged)
 
 ### Step 4: Verify Sync
 
 Confirm all files are updated:
 ```bash
 # Check brand context extraction
-node .claude/skills/brand/scripts/inject-brand-context.cjs --json | head -30
+node ~/.claude/skills/brand/scripts/inject-brand-context.cjs --json | head -30
 
 # Check CSS variables
 grep "primary" assets/design-tokens.css | head -5
@@ -83,8 +84,8 @@ Output summary:
 
 ## Skills Used
 
-- `brand` - Brand context extraction and sync
-- `design-system` - Token generation
+- `brand` - Brand context extraction, token sync and CSS generation (all in `scripts/sync-brand-to-tokens.cjs`)
+- `ui-ux-pro-max` (optional) - `search.py "<keywords>" --design-system` for fuller design-system guidance built on the new brand colors
 
 ## Examples
 

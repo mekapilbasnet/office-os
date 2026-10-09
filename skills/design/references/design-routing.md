@@ -1,24 +1,26 @@
 # Design Routing Guide
 
-When to use each design sub-skill.
+When to use each design skill. Three skills are installed together: `brand`,
+`design` (this one) and `ui-ux-pro-max`. Logo, CIP, slides, banners, icons and
+social photos are built into `design`.
 
 ## Skill Overview
 
 | Skill | Purpose | Key Files |
 |-------|---------|-----------|
-| brand | Brand identity, voice, assets | SKILL.md + 10 references + 3 scripts |
-| design-system | Token architecture, specs | SKILL.md + 7 references + 2 scripts |
-| ui-styling | Component implementation | SKILL.md + 7 references + 2 scripts |
-| logo-design | AI logo generation (55 styles, 30 palettes) | SKILL.md + 4 references + 2 scripts |
-| cip-design | Corporate Identity Program (50 deliverables) | SKILL.md + 3 references + 3 scripts |
-| slides | HTML presentations with Chart.js | SKILL.md + 4 references |
-| banner-design | Banners for social, ads, web, print (22 styles) | SKILL.md + 1 reference |
-| icon-design | SVG icon generation (15 styles, Gemini 3.1 Pro) | SKILL.md + 1 reference + 1 script |
+| brand | Brand guidelines, voice, assets, token sync | SKILL.md + references + 4 scripts |
+| ui-ux-pro-max | Design systems, tokens, UI styling, stack guidance (shadcn, Tailwind, React, ...) | SKILL.md + data + `scripts/search.py` |
+| design: logo | AI logo generation (55 styles, 30 palettes) | `references/logo-*.md`, `scripts/logo/` |
+| design: CIP | Corporate Identity Program (50 deliverables) | `references/cip-*.md`, `scripts/cip/` |
+| design: slides | HTML presentations with Chart.js | `references/slides-*.md` |
+| design: banner | Banners for social, ads, web, print (22 styles) | `references/banner-sizes-and-styles.md` |
+| design: icon | SVG icon generation (15 styles, Gemini 3.1 Pro) | `references/icon-design.md`, `scripts/icon/` |
+| design: social photos | HTML to PNG social images | `references/social-photos-design.md` |
 
 ## Routing by Task Type
 
 ### Brand Identity Tasks
-**→ brand**
+**-> brand**
 
 - Define brand colors and typography
 - Create logo usage guidelines
@@ -26,36 +28,25 @@ When to use each design sub-skill.
 - Organize and validate assets
 - Create messaging frameworks
 - Audit brand consistency
+- Sync brand guideline colors/fonts into design tokens (`sync-brand-to-tokens.cjs`)
 
-### Token System Tasks
-**→ design-system**
+### Token System and Implementation Tasks
+**-> ui-ux-pro-max**
 
-- Create design tokens JSON
-- Generate CSS variables
-- Define component specifications
-- Map tokens to Tailwind config
-- Validate token usage in code
-- Document state and variants
-
-### Implementation Tasks
-**→ ui-styling**
-
-- Add shadcn/ui components
-- Style with Tailwind classes
-- Implement dark mode
-- Create responsive layouts
-- Build accessible components
+- Generate a design system (`--design-system`, optionally `--persist`)
+- Pick colors, typography, UX rules, charts, icons
+- Stack guidance: `--stack shadcn`, `html-tailwind`, `react`, `nextjs`, ...
+- Dark mode, responsive layout, accessible components
 
 ### Logo Design Tasks
-**→ logo-design**
+**-> design (logo)**
 
-- Create logos with AI (Gemini Nano Banana)
+- Create logos with AI (Gemini Nano Banana, Atlas Cloud, MuAPI)
 - Search logo styles, color palettes, industry guidelines
 - Generate design briefs
-- Explore 55+ styles (minimalist, vintage, luxury, geometric, etc.)
 
 ### Corporate Identity Program Tasks
-**→ cip-design**
+**-> design (CIP)**
 
 - Generate CIP deliverables (business cards, letterheads, signage, vehicles, apparel)
 - Create CIP briefs with industry/style analysis
@@ -63,7 +54,7 @@ When to use each design sub-skill.
 - Render HTML presentations from CIP mockups
 
 ### Presentation Tasks
-**→ slides**
+**-> design (slides)**
 
 - Create strategic HTML presentations
 - Data visualization with Chart.js
@@ -71,137 +62,70 @@ When to use each design sub-skill.
 - Use layout patterns and design tokens
 
 ### Banner Design Tasks
-**→ banner-design**
+**-> design (banner)**
 
-- Design banners for social media (Facebook, Twitter, LinkedIn, YouTube, Instagram)
-- Create ad banners (Google Ads, Meta Ads)
-- Website hero banners and headers
-- Print banners and covers
+- Social media covers/headers, ad banners, website heroes, print banners
 - 22 art direction styles (minimalist, bold typography, gradient, glassmorphism, etc.)
 
 ### Icon Design Tasks
-**→ icon-design**
+**-> design (icon)**
 
 - Generate SVG icons with AI (Gemini 3.1 Pro Preview)
-- Batch icon variations in multiple styles
-- Multi-size export (16px, 24px, 32px, 48px)
-- 15 styles: outlined, filled, duotone, rounded, sharp, gradient, etc.
-- 12 categories: navigation, action, communication, media, commerce, data
+- Batch variations, multi-size export (16, 24, 32, 48 px)
+- 15 styles and 12 categories
 
 ## Routing by Question Type
 
 | Question | Skill |
 |----------|-------|
-| "What color should this be?" | brand |
-| "How do I create a token for X?" | design-system |
-| "How do I build a button component?" | ui-styling |
+| "What color should this be?" | brand (if a guideline exists), else ui-ux-pro-max |
+| "How do I create a token for X?" | ui-ux-pro-max (`--design-system`), brand (`sync-brand-to-tokens.cjs`) |
+| "How do I build a button component?" | ui-ux-pro-max (`--stack shadcn` / your stack) |
 | "Is this on-brand?" | brand |
-| "Should I use a CSS variable here?" | design-system |
-| "How do I add dark mode?" | ui-styling |
-| "Create a logo for my brand" | logo-design |
-| "Generate business card mockups" | cip-design |
-| "Create a pitch deck" | slides |
-| "Design brand identity package" | cip-design |
-| "What logo style fits my industry?" | logo-design |
-| "Design a Facebook cover" | banner-design |
-| "Create ad banners for Google" | banner-design |
-| "Make a website hero banner" | banner-design |
-| "Generate a settings icon" | icon-design |
-| "Create SVG icons for my app" | icon-design |
-| "Design an icon set" | icon-design |
+| "How do I add dark mode?" | ui-ux-pro-max |
+| "Create a logo for my brand" | design (logo) |
+| "Generate business card mockups" | design (CIP) |
+| "Create a pitch deck" | design (slides) |
+| "What logo style fits my industry?" | design (logo) |
+| "Design a Facebook cover / ad banner / hero" | design (banner) |
+| "Generate a settings icon / icon set" | design (icon) |
 
 ## Multi-Skill Workflows
 
 ### New Project Setup
 
 ```
-1. brand → Define identity
-   - Colors, typography, voice
-
-2. design-system → Create tokens
-   - Primitive, semantic, component
-
-3. ui-styling → Implement
-   - Configure Tailwind, add components
+1. brand -> Define identity (colors, typography, voice)
+2. brand -> sync-brand-to-tokens.cjs to write design-tokens.json / .css
+3. ui-ux-pro-max -> --design-system --persist, then --stack <your stack>
 ```
 
-### Design System Migration
+### Brand Package From Scratch
 
 ```
-1. brand → Audit existing
-   - Extract brand colors, fonts
-
-2. design-system → Formalize tokens
-   - Create three-layer architecture
-
-3. ui-styling → Update code
-   - Replace hardcoded values
-```
-
-### Component Creation
-
-```
-1. design-system → Reference specs
-   - Button states, sizes, variants
-
-2. ui-styling → Implement
-   - Build with shadcn/ui + Tailwind
-```
-
-## Skill Dependencies
-
-```
-brand
-    ↓ (colors, typography)
-design-system
-    ↓ (tokens, specs)
-ui-styling
-    ↓ (components)
-Application Code
+1. design (logo) -> generate logo variants
+2. design (CIP)  -> mockups using the chosen logo (--logo)
+3. design (slides) -> pitch deck
 ```
 
 ## Quick Commands
 
 **Brand:**
 ```bash
-node .claude/skills/brand/scripts/inject-brand-context.cjs
-node .claude/skills/brand/scripts/validate-asset.cjs <path>
+node ~/.claude/skills/brand/scripts/inject-brand-context.cjs
+node ~/.claude/skills/brand/scripts/validate-asset.cjs <path>
+node ~/.claude/skills/brand/scripts/sync-brand-to-tokens.cjs
 ```
 
-**Tokens:**
+**Design system and stack guidance:**
 ```bash
-node .claude/skills/design-system/scripts/generate-tokens.cjs -c tokens.json
-node .claude/skills/design-system/scripts/validate-tokens.cjs -d src/
-```
-
-**Components:**
-```bash
-npx shadcn@latest add button card input
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<product keywords>" --design-system -p "Project"
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack shadcn
 ```
 
 ## When to Use Multiple Skills
 
-Use **all eight** when:
-- Complete brand package from scratch (logo → CIP → presentation)
-
-Use **brand + design-system + ui-styling** when:
-- Design system setup and implementation
-
-Use **logo-design + cip-design** when:
-- Complete brand identity package with deliverable mockups
-
-Use **logo-design + cip-design + slides** when:
-- Brand pitch: generate logo, create CIP mockups, build pitch deck
-
-Use **banner-design + brand** when:
-- Social media presence: branded banners across all platforms
-
-Use **icon-design + design-system** when:
-- Custom icon set matching design tokens and component specs
-
-Use **brand + design-system** when:
-- Defining design language without implementation
-
-Use **design-system + ui-styling** when:
-- Implementing existing brand in code
-- Building component library
+- brand + ui-ux-pro-max: define the design language, then implement it in code
+- design (logo) + design (CIP): complete identity package with deliverable mockups
+- design (logo + CIP + slides): brand pitch
+- design (banner) + brand: on-brand social presence across platforms

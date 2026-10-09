@@ -14,7 +14,7 @@ Static validation runs offline. Live verification is not complete until actual a
 
 ## On the user's authenticated Claude Code host
 
-1. Start a fresh session; inspect `/status` and model status line. `compatibility --strict` must pass (recommended v2.1.257+).
+1. Start a fresh session; inspect `/status` and model status line. `compatibility --strict` must pass (recommended v2.1.271+).
 2. Make a nontrivial but safe request with routing ON, without invoking `/office-os` explicitly. Inspect `/tasks` and subagent status line for **resolved model ID**, rather than trusting narrated model names.
 3. Make sure the selected/default main model is Sonnet if validating the default policy; the smoke runner deliberately does not override the actual configured model. Run `python3 ~/.claude/skills/office-os/routing-tools/scripts/live_smoke.py` to preview. Run with `--run --approve-usage --output smoke-evidence.json` only with permission to spend usage.
 4. Review sanitized model-use evidence; correlate with `/tasks` or task panel. Presence of Haiku/Opus in `modelUsage` alone does not establish which agent used them.

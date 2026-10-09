@@ -151,13 +151,15 @@ Before detailed review, verify:
 ## Automation Support
 
 The `validate-asset.cjs` script can auto-check:
-- Color palette compliance
-- Minimum dimensions
-- File format/size
+- Minimum dimensions (PNG, JPEG, GIF, WebP; SVG is reported only)
+- File format and size
 - Naming convention
-- Basic metadata
+- Registration in `.assets/manifest.json`
 
-Run: `node .claude/skills/brand/scripts/validate-asset.cjs <asset-path>`
+Run: `node ~/.claude/skills/brand/scripts/validate-asset.cjs <asset-path>`
+
+For color palette compliance (SVG and 8-bit PNG), run
+`node ~/.claude/skills/brand/scripts/extract-colors.cjs <asset-path>`.
 
 ## Archival
 

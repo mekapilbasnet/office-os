@@ -19,32 +19,32 @@ Treat work as higher risk when it affects authentication, authorization, tenant 
 
 ## Default engineering stack
 
-Use these roles when the named skills are installed. Absence of a named skill is not a blocker; perform the underlying work directly using project tools.
+Each row names a role and example skills. Use a skill only if it is installed. A missing skill is never a blocker: do the underlying work directly with project tools.
 
-| Need | Default | Conditional addition | Boundary |
+| Need | Default (if installed) | Conditional addition (if installed) | Boundary |
 | --- | --- | --- | --- |
-| Investigation | `investigate-first` | `caveman-explore` for Caveman flow; `ponytail-audit` for a broad legacy audit | Do not run all three by default |
+| Investigation | `investigate-first` | `caveman-explore` (repository explorer); `ponytail-audit` for a broad legacy audit | Do not run several by default |
 | Product ambiguity | `brainstorming` | Office OS discovery and red-team review | Skip when approved requirements are already clear |
-| Planning | `writing-plans` | `sparc-methodology` only for genuinely large multi-agent programs | Plan in proportion to task size |
-| Implementation | Caveman: `surgical-patch`, `lean-build`, `safe-refactor`, or `migration` | `executing-plans` for a prepared plan | Caveman is the default build/fix layer |
+| Planning | `writing-plans` | A methodology skill only for genuinely large multi-agent programs | Plan in proportion to task size |
+| Implementation | A lean build skill: `surgical-patch`, `lean-build`, `safe-refactor`, or `migration` | `executing-plans` for a prepared plan | Prefer one lean build skill over ad-hoc edits |
 | Debugging | `systematic-debugging` | `bugs`, `qa-handover` for defect artifacts | Find root cause before patching |
 | Testing | `test-driven-development` where it improves design or prevents regression | Playwright/API and k6 skills for E2E/performance | Use the repository's existing tools first |
 | QA handover | Project `qa-handover` skill or template | Office OS generic handover from `workflows.md` | Use project format when one exists; do not duplicate it |
 | Independent review | `reviewer` agent (read-only, Sonnet) | Use for pre-release or pre-merge checks when a second read adds value | Do not use for routine edits |
 | Code review | `code-review` | `security-review`, `verification-quality`, `ponytail-review` for distinct specialist questions | Avoid duplicate general reviews |
-| Verification | `verification-before-completion` | `caveman-evidence-review` or `verify-and-stop` in Caveman mode | Never claim success without executed evidence |
+| Verification | `verification-before-completion` | `verify-and-stop` or `caveman-evidence-review` | Never claim success without executed evidence |
 | Branch/release | `finishing-a-development-branch` | GitHub skills when remote repository action is requested | Do not push, merge, or release without authorization |
 
-## Caveman and Ponytail
+## Optional build and audit layers
 
-- Use **Caveman by default** for building, fixing, refactoring, migration work, and evidence-driven completion.
-- Use **Ponytail conditionally** for broad codebase audits, technical-debt analysis, maintainability trends, or improvement discovery across a messy or legacy area.
-- For debt-heavy work, Ponytail may inspect first, then Caveman implements the selected changes.
-- Do not chain both on routine work.
+- If a token-compression or lean-build plugin (such as Caveman) is installed, use its skills for building, fixing, refactoring, migration work, and evidence-driven completion.
+- If a codebase-audit plugin (such as Ponytail) is installed, use it for broad audits, technical-debt analysis, maintainability trends, or improvement discovery in a messy or legacy area.
+- For debt-heavy work, audit first, then implement the selected changes with the lean build skill.
+- Do not chain both on routine work. Without either plugin, follow the project's own conventions.
 
 ## Specialist routing
 
-| Task signal | Useful skills when installed |
+| Task signal | Use if installed |
 | --- | --- |
 | UI/UX | `ui-ux-pro-max`, `design`, `brand`, `frontend-design`; add accessibility specialist for meaningful UI |
 | Accessibility | `accessibility-agents` or equivalent WCAG/assistive-technology skill |
@@ -54,14 +54,14 @@ Use these roles when the named skills are installed. Absence of a named skill is
 | Documents | docs/docx/pdf/pptx/xlsx specialist matching the requested artifact |
 | GitHub | GitHub code review, project, workflow, release, or multi-repo skill matching the exact remote action |
 | AI product | AI evaluation/governance skill; Langfuse only when the product actually uses it |
-| Agent observability | OpenLIT or AI Observer, not both initially |
-| Skill supply-chain safety | SkillSpector or equivalent before installing untrusted third-party skills |
+| Agent observability | An agent-observability tool, one at first |
+| Skill supply-chain safety | A skill-scanning tool before installing untrusted third-party skills |
 
 Treat third-party skills as code. Review their instructions, hooks, shell commands, dependencies, network behavior, permissions, and licensing before installation. Do not grant broad permissions merely because a catalog lists a skill.
 
 ## Multi-agent routing
 
-Use `subagent-driven-development`, `dispatching-parallel-agents`, Claude-Flow, swarm, or similar only when:
+Use `subagent-driven-development`, `dispatching-parallel-agents`, or another multi-agent tool, if installed, only when:
 
 - at least two scopes are independent;
 - parallel execution reduces time or improves independent review;
@@ -87,7 +87,7 @@ Verify current behavior → characterization tests → `safe-refactor` → compa
 
 ### Debt-heavy legacy area
 
-`ponytail-audit` or `ponytail-debt` → prioritize evidence-backed items → Caveman implementation → verification
+Audit skill if installed (for example `ponytail-audit`) → prioritize evidence-backed items → lean build skill → verification
 
 ### UI redesign
 

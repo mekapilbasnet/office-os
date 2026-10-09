@@ -9,18 +9,11 @@
 
 ROUTING_STATE: ON
 
-This automatically loaded policy applies to ordinary Claude Code work when enabled; explicit `/office-os` invocation is not required. If the rule is replaced by the installed OFF rule, do not apply its model-routing preferences.
-
-This reference is integrated into the **Office OS** skill. It selects execution models only *after* Office OS triage and domain/specialist selection. Do not skip Office OS evidence, authorization, QA or user/project instruction requirements to optimize model cost. The persistent copy installed at `~/.claude/rules/model-routing.md` makes model defaults available beyond explicit skill invocation. For activation use `/dynamic-routing off`, `/dynamic-routing on`, or `/dynamic-routing status`. Office OS remains the only full orchestration skill; `/dynamic-routing` is only a lightweight command.
-
+This policy is loaded automatically and applies to ordinary Claude Code work when enabled; `/office-os` is not required. If it is replaced by the installed OFF rule, do not apply its routing preferences. It picks models only *after* Office OS triage and specialist selection; never skip evidence, authorization, QA or project instructions to save cost.
 
 ## Objective
 
-Use the least expensive model that can reliably complete the current work while preserving correctness and minimizing unnecessary interruption.
-
-Route by capability and task difficulty, not by file count.
-
-Current mapping:
+Use the least expensive model that can reliably complete the work, with minimal interruption. Route by capability and task difficulty, not file count.
 
 ```text
 FAST              -> Haiku
@@ -29,188 +22,80 @@ DEEP_REASONING    -> Opus
 LONG_HORIZON      -> Fable, explicit approval required
 ```
 
-Prefer model-family aliases rather than exact version IDs unless version pinning is intentional.
+Prefer model-family aliases over exact version IDs unless pinning is intentional.
 
 ## Haiku: discover
 
-Use `Explore` for cheap, read-only repository discovery:
-
-- locate files, symbols, endpoints, entities, schemas, tests, and configuration
-- trace references and call paths
-- identify where a feature is implemented
-- gather compact context before deeper reasoning
-
-Do not use Haiku for difficult architecture, security-sensitive reasoning, ambiguous root-cause analysis, or backward-compatibility decisions.
+Use `Explore` for cheap, read-only discovery: locate files, symbols, schemas, tests and configuration; trace call paths; gather compact context. Not for hard architecture, security-sensitive reasoning, ambiguous root causes, or compatibility decisions.
 
 ## Sonnet: build
 
-Sonnet is the normal main model and implementation model.
-
-Use it for:
-
-- ordinary features
-- CRUD and APIs
-- normal bug fixes
-- DTOs and validation
-- tests
-- routine refactors
-- normal database work
-- documentation
-- Java/Spring and Node/NestJS implementation
-- integrating findings returned by other agents
-
-Do not create a subagent for work Sonnet can handle efficiently itself.
+Sonnet is the normal main and implementation model: features, APIs, ordinary bug fixes, tests, routine refactors, normal database work, documentation, framework-specific implementation, and integrating other agents' findings. Do not spawn a subagent for work Sonnet can do efficiently.
 
 ## Opus: reason
 
-Use `deep-reasoner` when the task genuinely requires deeper reasoning, such as:
+Use `deep-reasoner` when the task genuinely needs deeper reasoning:
 
-- unclear root cause
-- legacy behavior that must be reverse-engineered
-- non-obvious cross-module interactions
-- complex business rules
-- important backward compatibility
-- architecture tradeoffs
-- concurrency or transaction reasoning
-- risky migrations
-- authentication/authorization or security-sensitive logic
-- production data risk
-- repeated failed attempts
-- unresolved uncertainty after normal Sonnet investigation
+- unclear root cause, or legacy behavior to reverse-engineer
+- non-obvious cross-module interactions, complex business rules
+- backward compatibility, architecture tradeoffs
+- concurrency, transactions, risky migrations
+- auth or other security-sensitive logic, production data risk
+- repeated failed attempts, or uncertainty left after Sonnet investigation
 
-Opus should normally investigate and recommend.
+Opus investigates and recommends; Sonnet implements afterward. Not for searching, mechanical edits, obvious bugs, formatting, or simple tests.
 
-Sonnet should normally implement afterward.
+## Reviewer: check
 
-Do not use Opus for simple searching, mechanical edits, obvious bugs, formatting, or straightforward tests.
+Use `reviewer` (read-only, Sonnet) for an independent read of a diff, files or a plan before merge or release, or after a risky change (auth, data, migrations, public contracts). It never edits and cannot run tests. Skip it for routine or trivial edits.
 
 ## Fable: approval required
 
-NEVER use Fable automatically.
+NEVER use Fable automatically, as main model, subagent, advisor or fallback. The same applies to any Fable-equivalent, premium long-horizon, maximum-capability autonomous, or unknown-cost premium model.
 
-Before any Fable use:
+Before any use: explain briefly why Sonnet/Opus are insufficient, ask for explicit approval, wait for it, and use it only for the current approved task. Approval does not carry between tasks. If denied, continue with Sonnet and/or Opus.
 
-1. explain briefly why Sonnet/Opus are insufficient or why Fable adds material value
-2. ask the user for explicit approval
-3. wait for approval
-4. use Fable only for the current approved task
+## Mixed tasks and escalation
 
-Approval does not carry between tasks.
+Delegate only the part that benefits from another model. Typical flow, skipping stages that add nothing: Explore/Haiku discovers, deep-reasoner/Opus reasons (only if needed), Sonnet implements and tests. Escalation order is not required; after deep reasoning, return routine work to Sonnet.
 
-If approval is denied, continue with Sonnet and/or Opus.
+## Advisor and subagents
 
-Apply the same rule to future Fable-equivalent, premium long-horizon, maximum-capability autonomous, or unknown-cost premium models.
-
-## Mixed tasks
-
-Delegate only the portion that benefits from another model.
-
-Typical flow:
-
-```text
-Explore/Haiku -> discover
-deep-reasoner/Opus -> reason, only if needed
-Sonnet -> implement and test
-```
-
-Skip stages that do not add value.
-
-## Escalation
-
-Conceptual escalation:
-
-```text
-Haiku -> Sonnet -> Opus -> Fable
-```
-
-This is not a required sequence.
-
-After deep reasoning is complete, de-escalate routine work back to Sonnet.
-
-## Advisor-aware behavior
-
-If an Opus Advisor is already enabled, it may be used for short decision-point consultation where full-conversation context is useful.
-
-Do not enable an advisor automatically just because a task is difficult.
-
-Prefer `deep-reasoner` for substantial isolated investigation that would otherwise flood the main context.
-
-Never use or configure a Fable Advisor without the same explicit approval required for direct Fable use.
-
-## Subagent discipline
-
-Use a subagent when it gives meaningful benefit:
-
-- lower-cost exploration
-- deeper reasoning
-- context isolation
-- focused specialist analysis
-
-Avoid redundant agents and overlapping investigations.
+If an Opus Advisor is already enabled, use it for short decision-point consultation; never enable one just because a task is hard. Prefer `deep-reasoner` for large isolated investigations. Use a subagent only for cheaper exploration, deeper reasoning, context isolation or focused analysis, and avoid redundant or overlapping agents.
 
 ## Future models
 
-When a new model appears, classify it from official documentation as:
-
-```text
-FAST
-GENERAL
-DEEP_REASONING
-LONG_HORIZON
-SPECIALIZED
-UNKNOWN
-```
-
-Then map it to the capability role.
-
-Do not infer capability from the model name alone.
-
-LONG_HORIZON and unknown premium models require approval.
-
-## Final principle
-
-Optimize for:
-
-```text
-correctness
-+ sufficient reasoning
-+ low unnecessary cost
-+ minimal interruption
-```
+Classify a new model from official documentation (FAST, GENERAL, DEEP_REASONING, LONG_HORIZON, SPECIALIZED, UNKNOWN), not from its name. LONG_HORIZON and unknown premium models need approval, as with Fable.
 
 ## Routing observability and truthful reporting
 
-The installed status line reports the main session's actual `model.display_name`, while the installed subagent status line reports each agent's actual **resolved** `model` when supplied by Claude Code. The display is the source of truth, not a model name guessed in prose.
+The status line shows the main session's actual `model.display_name`; the subagent status line shows each agent's **resolved** `model` when Claude Code supplies it. That display is the source of truth, not a model name guessed in prose.
 
-- For substantial delegations, briefly say which agent and model were **requested** and why. If an effective model isn't known, label the model *requested/unverified*.
-- Never repeatedly announce the main model for every tiny step. Use the terminal status line as the default display.
-- When the actual subagent model differs from the intended model, state the difference and avoid claiming the routing plan succeeded.
-- Inspect `/model`, `/status` and active task details when a mismatch is suspected. CLI flags, provider mappings, managed/project/local settings and environment overrides can alter the result.
-- If a requested model is unavailable, either continue locally on an appropriate permitted model with disclosure or request guidance. Never silently fall back to approval-only Fable or another premium tier.
+- For substantial delegations, say which agent and model were **requested** and why; label an unknown effective model *requested/unverified*.
+- Do not announce the main model for tiny steps.
+- If the actual model differs from the intended one, say so and do not claim the plan succeeded. Check `/model`, `/status` and task details; flags, provider mappings, managed/project/local settings and environment overrides can change it.
+- If a requested model is unavailable, continue on a permitted model with disclosure, or ask. Never silently fall back to Fable or another premium tier.
 
-## Task thresholds, bounded delegation and handoffs
+## Delegation thresholds
 
-- Skip separate Explore runs for trivial, already-understood edits. Start a focused Explore task when discovery would otherwise consume substantial Sonnet context.
-- Escalate to deep-reasoner only for material uncertainty, security or data risk, nontrivial architectural decisions, or repeated failed attempts. Do not equate codebase size with difficulty.
-- Give subagents scoped goals, relevant files and limits. Do not run overlapping investigations without a concrete reason.
-- Require evidence-backed findings, file paths, uncertainties and concrete verification suggestions. Treat `maxTurns` and incomplete outputs as **partial**, not confirmed conclusions.
-- After Opus investigation, use Sonnet for routine changes and testing unless actual implementation complexity justifies otherwise.
-- No skill or instruction-only setup can guarantee enforcement of every future manual model selection, built-in fallback, managed policy or provider behavior.
+- Skip Explore for trivial, understood edits. Use it when discovery would burn substantial Sonnet context.
+- Use deep-reasoner only for material uncertainty, security or data risk, nontrivial architecture, or repeated failures. Codebase size is not difficulty.
+- Give subagents scoped goals, files and limits; no overlapping investigations. Require evidence, file paths, uncertainties and verification steps. Treat `maxTurns` hits and incomplete output as **partial**.
+- After Opus, use Sonnet for routine changes and tests.
+- Instructions alone cannot guarantee manual model choices, fallbacks, managed policy or provider behavior.
 
 ## Optional routing profiles
 
-Installed default is **Balanced**. The ACTIVE installed profile is specified in the appended PROFILE_STATE footer. Change with `/dynamic-routing profile economy|balanced|quality`:
+Default is **Balanced**; the ACTIVE profile is in the PROFILE_STATE footer. Change with `/dynamic-routing profile economy|balanced|quality`:
 
-- **Economy:** targeted Haiku discovery; Sonnet handles almost all implementation and initial reasoning; Opus only after material uncertainty/risk.
+- **Economy:** targeted Haiku discovery; Sonnet for nearly everything else; Opus only after material uncertainty/risk.
 - **Balanced:** Haiku for meaningful discovery; Sonnet for implementation and ordinary debugging; Opus for significant complex reasoning.
-- **Quality:** Haiku for simple discovery; Sonnet for implementation; escalate difficult ambiguous reasoning to Opus sooner.
+- **Quality:** Haiku for simple discovery; Sonnet for implementation; Opus sooner for hard, ambiguous reasoning.
 
-All profiles require explicit task-specific approval for Fable. These are *instructional preferences*, not a technical cost cap or guaranteed model switch.
+These are preferences, not a cost cap or guaranteed model switch.
 
+## Runtime fallbacks
 
-## Runtime fallbacks and observability
-
-- Default installer behavior preserves the existing `fallbackModel` setting; it never injects Fable. Use `/dynamic-routing fallback status|none|sonnet|sonnet-haiku` to inspect or explicitly configure. Claude Code applies fallback chains to subagents as well.
-- A fallback model is not automatically evidence of a successful routing choice. Inspect effective model in the subagent status line or `modelUsage` of a live JSON result.
-- Each fallback or routing profile change requires a fresh Claude Code session to reliably refresh persistent instructions.
-- `/dynamic-routing usage` summarizes user-supplied result JSON without storing prompt text. Costs are Claude Code's reported estimates, not billing enforcement.
+- The installer preserves any existing `fallbackModel` and never adds Fable. Inspect or set it with `/dynamic-routing fallback status|none|sonnet|sonnet-haiku`; it applies to subagents too.
+- A fallback is not proof of a good routing choice; check the effective model in the status line or `modelUsage`.
+- Profile and fallback changes need a fresh session. `/dynamic-routing usage` summarizes result JSON without storing prompts; costs are estimates, not enforcement.

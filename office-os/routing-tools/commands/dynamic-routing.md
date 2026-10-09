@@ -1,5 +1,5 @@
 ---
-description: Manually enable, disable, or inspect Office OS automatic model routing. Use `/dynamic-routing on`, `/dynamic-routing off`, `/dynamic-routing status`, `/dynamic-routing profile economy|balanced|quality`, or `/dynamic-routing fallback status|none|sonnet|sonnet-haiku`.
+description: Manually enable, disable, or inspect Office OS automatic model routing. Use `/dynamic-routing on`, `/dynamic-routing off`, `/dynamic-routing status`, `/dynamic-routing profile economy|balanced|quality`, `/dynamic-routing fallback status|none|sonnet|sonnet-haiku`, `/dynamic-routing usage <result.json>`, `/dynamic-routing history`, `/dynamic-routing export`, or `/dynamic-routing compatibility`.
 disable-model-invocation: true
 ---
 
@@ -14,9 +14,13 @@ This is a **control-only alias** for the Office OS routing manager. It is not a 
 - `status` or no argument: use the same manager path with `status` (read-only).
 - `profile` with no value: run `profile` read-only. `profile economy|balanced|quality`: run the manager with `profile <name> --apply`; the user's explicit command authorizes only the selected profile change.
 - `fallback status`: inspect only. `fallback none|sonnet|sonnet-haiku`: first show that this changes user-level fallback settings for **all** subagents; get explicit approval before running the manager with `fallback <choice> --apply`.
-- `usage <path>`: run the manager with `usage --input <path>` on an explicitly provided Claude Code JSON output. Never persist the input or prompts. Record only if the user separately authorizes `--record`.
+- `usage <path>`: run the manager with `usage --input "<path>"` on an explicitly provided Claude Code JSON output. Always put the path in double quotes, and refuse (run nothing) if it contains shell metacharacters such as `` ` ``, `$`, `;`, `&`, `|`, `<`, `>`, a quote or a newline. Never persist the input or prompts. Record only if the user separately authorizes `--record`.
 - `compatibility`: run the manager with `compatibility` read-only.
-- `history`: show opt-in sanitized usage summaries; `export` requires an explicit output file and writes only nonsecret routing preferences.
+- `history`: show opt-in sanitized usage summaries (`--limit N` for the newest N, default 10); `export` requires an explicit output file and writes only nonsecret routing preferences.
 - Anything else: explain the supported subcommands without running anything.
+
+If `python3` is not found (common on Windows), use `python` or `py -3` with the same manager path and arguments.
+
+Every change keeps a rollback backup under `office-os-routing/backups`; only the newest 20 are kept, plus the first install backup (your original settings); older ones are pruned automatically. Backups hold a full copy of `settings.json`, so treat them as private.
 
 Use an execution tool available in Claude Code; if execution is not permitted, say the toggle was **not** applied and show the exact shell command instead. Read the manager result and only report success if it reports completion. Do not claim live model switching. For the remainder of the current conversation, obey the user's updated routing preference immediately. To guarantee automatic rule refresh across the full Claude Code session, start a new session after toggling.

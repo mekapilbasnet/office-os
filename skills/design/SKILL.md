@@ -1,6 +1,6 @@
 ---
 name: design
-description: "Comprehensive design skill: brand identity, design tokens, UI styling, logo generation (55 styles, Gemini, Atlas Cloud, or MuAPI AI), corporate identity program (50 deliverables, CIP mockups), HTML presentations (Chart.js), banner design (22 styles, social/ads/web/print), icon design (15 styles, SVG, Gemini 3.1 Pro), social photos (HTML→screenshot, multi-platform). Actions: design logo, create CIP, generate mockups, build slides, design banner, generate icon, create social photos, social media images, brand identity, design system. Platforms: Facebook, Twitter, LinkedIn, YouTube, Instagram, Pinterest, TikTok, Threads, Google Ads."
+description: "Comprehensive design skill: logo generation (55 styles, Gemini, Atlas Cloud, or MuAPI AI), corporate identity program (50 deliverables, CIP mockups), HTML presentations (Chart.js), banner design (22 styles, social/ads/web/print), icon design (15 styles, SVG, Gemini 3.1 Pro), social photos (HTML→screenshot, multi-platform). Brand guidelines live in the `brand` skill; design tokens and UI styling in `ui-ux-pro-max`. Actions: design logo, create CIP, generate mockups, build slides, design banner, generate icon, create social photos, social media images. Platforms: Facebook, Twitter, LinkedIn, YouTube, Instagram, Pinterest, TikTok, Threads, Google Ads."
 argument-hint: "[design-type] [context]"
 license: MIT
 metadata:
@@ -10,13 +10,10 @@ metadata:
 
 # Design
 
-Unified design skill: brand, tokens, UI, logo, CIP, slides, banners, social photos, icons.
+Unified design skill: logo, CIP, slides, banners, social photos, icons. Brand guidelines are handled by the `brand` skill and design tokens / UI styling by `ui-ux-pro-max` (both installed alongside this skill).
 
 ## When to Use
 
-- Brand identity, voice, assets
-- Design system tokens and specs
-- UI styling with shadcn/ui + Tailwind
 - Logo design and AI generation
 - Corporate identity program (CIP) deliverables
 - Presentations and pitch decks
@@ -27,9 +24,8 @@ Unified design skill: brand, tokens, UI, logo, CIP, slides, banners, social phot
 
 | Task | Sub-skill | Details |
 |------|-----------|---------|
-| Brand identity, voice, assets | `brand` | External skill |
-| Tokens, specs, CSS vars | `design-system` | External skill |
-| shadcn/ui, Tailwind, code | `ui-styling` | External skill |
+| Brand identity, voice, assets | `brand` | Separate skill (installed alongside) |
+| Design tokens, CSS vars, UI styling (shadcn/ui, Tailwind) | `ui-ux-pro-max` | Separate skill: `--design-system`, `--stack shadcn` / `html-tailwind` |
 | Logo creation, AI generation | Logo (built-in) | `references/logo-design.md` |
 | CIP mockups, deliverables | CIP (built-in) | `references/cip-design.md` |
 | Presentations, pitch decks | Slides (built-in) | `references/slides.md` |
@@ -45,27 +41,27 @@ Cloud, and MuAPI image generation.
 ### Logo: Generate Design Brief
 
 ```bash
-python3 scripts/logo/search.py "tech startup modern" --design-brief -p "BrandName"
+python3 ~/.claude/skills/design/scripts/logo/search.py "tech startup modern" --design-brief -p "BrandName"
 ```
 
 ### Logo: Search Styles/Colors/Industries
 
 ```bash
-python3 scripts/logo/search.py "minimalist clean" --domain style
-python3 scripts/logo/search.py "tech professional" --domain color
-python3 scripts/logo/search.py "healthcare medical" --domain industry
+python3 ~/.claude/skills/design/scripts/logo/search.py "minimalist clean" --domain style
+python3 ~/.claude/skills/design/scripts/logo/search.py "tech professional" --domain color
+python3 ~/.claude/skills/design/scripts/logo/search.py "healthcare medical" --domain industry
 ```
 
 ### Logo: Generate with AI
 
-**ALWAYS** generate output logo images with white background.
+**ALWAYS** generate output logo images on a plain white background (the generator's prompt template asks for this too).
 
 ```bash
-python3 scripts/logo/generate.py --brand "TechFlow" --style minimalist --industry tech
-python3 scripts/logo/generate.py --prompt "coffee shop vintage badge" --style vintage
-python3 scripts/logo/generate.py --brand "TechFlow" --provider atlas
-python3 scripts/logo/generate.py --brand "TechFlow" --provider muapi
-python3 scripts/logo/generate.py --brand "TechFlow" --provider muapi --muapi-model nano-banana-pro
+python3 ~/.claude/skills/design/scripts/logo/generate.py --brand "TechFlow" --style minimalist --industry tech
+python3 ~/.claude/skills/design/scripts/logo/generate.py --prompt "coffee shop vintage badge" --style vintage
+python3 ~/.claude/skills/design/scripts/logo/generate.py --brand "TechFlow" --provider atlas
+python3 ~/.claude/skills/design/scripts/logo/generate.py --brand "TechFlow" --provider muapi
+python3 ~/.claude/skills/design/scripts/logo/generate.py --brand "TechFlow" --provider muapi --muapi-model nano-banana-pro
 ```
 
 **IMPORTANT:** When scripts fail, try to fix them directly.
@@ -79,32 +75,32 @@ After generation, **ALWAYS** ask user about HTML preview via `AskUserQuestion`. 
 ### CIP: Generate Brief
 
 ```bash
-python3 scripts/cip/search.py "tech startup" --cip-brief -b "BrandName"
+python3 ~/.claude/skills/design/scripts/cip/search.py "tech startup" --cip-brief -b "BrandName"
 ```
 
 ### CIP: Search Domains
 
 ```bash
-python3 scripts/cip/search.py "business card letterhead" --domain deliverable
-python3 scripts/cip/search.py "luxury premium elegant" --domain style
-python3 scripts/cip/search.py "hospitality hotel" --domain industry
-python3 scripts/cip/search.py "office reception" --domain mockup
+python3 ~/.claude/skills/design/scripts/cip/search.py "business card letterhead" --domain deliverable
+python3 ~/.claude/skills/design/scripts/cip/search.py "luxury premium elegant" --domain style
+python3 ~/.claude/skills/design/scripts/cip/search.py "hospitality hotel" --domain industry
+python3 ~/.claude/skills/design/scripts/cip/search.py "office reception" --domain mockup
 ```
 
 ### CIP: Generate Mockups
 
 ```bash
 # With logo (RECOMMENDED)
-python3 scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --deliverable "business card" --industry "consulting"
+python3 ~/.claude/skills/design/scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --deliverable "business card" --industry "consulting"
 
 # Full CIP set
-python3 scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --industry "consulting" --set
+python3 ~/.claude/skills/design/scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --industry "consulting" --set
 
 # Pro model (4K text)
-python3 scripts/cip/generate.py --brand "TopGroup" --logo logo.png --deliverable "business card" --model pro
+python3 ~/.claude/skills/design/scripts/cip/generate.py --brand "TopGroup" --logo logo.png --deliverable "business card" --model pro
 
 # Without logo
-python3 scripts/cip/generate.py --brand "TechFlow" --deliverable "business card" --no-logo-prompt
+python3 ~/.claude/skills/design/scripts/cip/generate.py --brand "TechFlow" --deliverable "business card" --no-logo-prompt
 ```
 
 Models: `flash` (default, `gemini-2.5-flash-image`), `pro` (`gemini-3-pro-image-preview`)
@@ -112,7 +108,7 @@ Models: `flash` (default, `gemini-2.5-flash-image`), `pro` (`gemini-3-pro-image-
 ### CIP: Render HTML Presentation
 
 ```bash
-python3 scripts/cip/render-html.py --brand "TopGroup" --industry "consulting" --images /path/to/cip-output
+python3 ~/.claude/skills/design/scripts/cip/render-html.py --brand "TopGroup" --industry "consulting" --images /path/to/cip-output
 ```
 
 **Tip:** If no logo exists, use Logo Design section above first.
@@ -135,16 +131,16 @@ Load `references/slides-create.md` for the creation workflow.
 
 ## Banner Design (Built-in)
 
-22 art direction styles across social, ads, web, print. Uses `frontend-design`, `ai-artist`, `ai-multimodal`, `chrome-devtools` skills.
+22 art direction styles across social, ads, web, print. Uses `ui-ux-pro-max` for style research, the built-in logo/icon generators (or images the user supplies) for visuals, and headless Chrome / Playwright for PNG export.
 
 Load `references/banner-sizes-and-styles.md` for complete sizes and styles reference.
 
 ### Banner: Workflow
 
 1. **Gather requirements** via `AskUserQuestion` — purpose, platform, content, brand, style, quantity
-2. **Research** — Activate `ui-ux-pro-max`, browse Pinterest for references
-3. **Design** — Create HTML/CSS banner with `frontend-design`, generate visuals with `ai-artist`/`ai-multimodal`
-4. **Export** — Screenshot to PNG at exact dimensions via `chrome-devtools`
+2. **Research** — Activate `ui-ux-pro-max` (style, color, typography searches); ask the user for reference links if they have any
+3. **Design** — Create HTML/CSS banner (use `frontend-design` too if it is installed); use user-supplied images, or generate marks/icons with the scripts in this skill
+4. **Export** — Screenshot to PNG at exact dimensions with headless Chrome or Playwright (see `references/social-photos-design.md`)
 5. **Present** — Show all options side-by-side, iterate on feedback
 
 ### Banner: Quick Size Reference
@@ -187,22 +183,24 @@ Load `references/banner-sizes-and-styles.md` for complete sizes and styles refer
 ### Icon: Generate Single Icon
 
 ```bash
-python3 scripts/icon/generate.py --prompt "settings gear" --style outlined
-python3 scripts/icon/generate.py --prompt "shopping cart" --style filled --color "#6366F1"
-python3 scripts/icon/generate.py --name "dashboard" --category navigation --style duotone
+python3 ~/.claude/skills/design/scripts/icon/generate.py --prompt "settings gear" --style outlined
+python3 ~/.claude/skills/design/scripts/icon/generate.py --prompt "shopping cart" --style filled --color "#6366F1"
+python3 ~/.claude/skills/design/scripts/icon/generate.py --name "dashboard" --category navigation --style duotone
 ```
 
 ### Icon: Generate Batch Variations
 
 ```bash
-python3 scripts/icon/generate.py --prompt "cloud upload" --batch 4 --output-dir ./icons
+python3 ~/.claude/skills/design/scripts/icon/generate.py --prompt "cloud upload" --batch 4 --output-dir ./icons
 ```
 
 ### Icon: Multi-size Export
 
 ```bash
-python3 scripts/icon/generate.py --prompt "user profile" --sizes "16,24,32,48" --output-dir ./icons
+python3 ~/.claude/skills/design/scripts/icon/generate.py --prompt "user profile" --sizes "16,24,32,48" --output-dir ./icons
 ```
+
+The icon is generated once and rescaled for each size (one API call total).
 
 ### Icon: Top Styles
 
@@ -220,20 +218,20 @@ python3 scripts/icon/generate.py --prompt "user profile" --sizes "16,24,32,48" -
 
 ## Social Photos (Built-in)
 
-Multi-platform social image design: HTML/CSS → screenshot export. Uses `ui-ux-pro-max`, `brand`, `design-system`, `chrome-devtools` skills.
+Multi-platform social image design: HTML/CSS → screenshot export. Uses the `ui-ux-pro-max` and `brand` skills plus headless Chrome / Playwright for export.
 
 Load `references/social-photos-design.md` for sizes, templates, best practices.
 
 ### Social Photos: Workflow
 
-1. **Orchestrate** — `project-management` skill for TODO tasks; parallel subagents for independent work
+1. **Plan** — Break the work into a short checklist (one item per concept x size); run independent items in parallel subagents if available
 2. **Analyze** — Parse prompt: subject, platforms, style, brand context, content elements
 3. **Ideate** — 3-5 concepts, present via `AskUserQuestion`
-4. **Design** — `/ckm:brand` → `/ckm:design-system` → randomly invoke `/ck:ui-ux-pro-max` OR `/ck:frontend-design`; HTML per idea × size
-5. **Export** — `chrome-devtools` or Playwright screenshot at exact px (2x deviceScaleFactor)
-6. **Verify** — Use Chrome MCP or `chrome-devtools` skill to visually inspect exported designs; fix layout/styling issues and re-export
-7. **Report** — Summary to `plans/reports/` with design decisions
-8. **Organize** — Invoke `assets-organizing` skill to sort output files and reports
+4. **Design** — Read the project's brand guidelines (`brand` skill) and run `ui-ux-pro-max` (`--design-system`) for tokens, layout and hierarchy; build HTML per idea × size
+5. **Export** — Headless Chrome or Playwright screenshot at exact px (2x deviceScaleFactor)
+6. **Verify** — Open each exported PNG (or use a browser tool if available) to inspect it; fix layout/styling issues and re-export
+7. **Report** — Short summary of design decisions (save to the project's reports/docs folder if it has one)
+8. **Organize** — Put outputs in a clearly named folder per campaign/platform
 
 ### Social Photos: Key Sizes
 
@@ -254,9 +252,8 @@ Load `references/social-photos-design.md` for sizes, templates, best practices.
 
 ### New Design System
 
-1. **Brand** (brand skill) → Define colors, typography, voice
-2. **Tokens** (design-system skill) → Create semantic token layers
-3. **Implement** (ui-styling skill) → Configure Tailwind, shadcn/ui
+1. **Brand** (`brand` skill) → Define colors, typography, voice; run `node ~/.claude/skills/brand/scripts/sync-brand-to-tokens.cjs` to produce `design-tokens.json` / `design-tokens.css`
+2. **Tokens + styling** (`ui-ux-pro-max` skill) → `search.py "<product keywords>" --design-system --persist -p "Project"` for a persisted Master design system, then `--stack shadcn` / `html-tailwind` for Tailwind and component guidance
 
 ## References
 
@@ -292,10 +289,11 @@ Load `references/social-photos-design.md` for sizes, templates, best practices.
 | `scripts/cip/render-html.py` | Render HTML presentation from CIP mockups |
 | `scripts/cip/core.py` | BM25 search engine for CIP data |
 | `scripts/icon/generate.py` | Generate SVG icons with Gemini 3.1 Pro |
+| `scripts/_common.py` | Shared BM25 search + `.env` key loader used by the logo, CIP and icon scripts |
 
 ## Prerequisites
 
-**Python:** This skill uses Python scripts. On Windows, use `python` instead of `python3` (e.g., `python scripts/logo/search.py` instead of `python3 scripts/logo/search.py`).
+**Python:** This skill uses Python scripts. Commands use the full path `~/.claude/skills/design/scripts/...`, so the working directory does not matter. On Windows, use `python` instead of `python3`, and in cmd/PowerShell use `%USERPROFILE%\.claude\skills\design\scripts\...` / `$HOME\.claude\skills\design\scripts\...` since `~` may not expand.
 
 Check if Python is installed:
 ```bash
@@ -308,9 +306,12 @@ python3 --version || python --version
 export GEMINI_API_KEY="your-key"  # https://aistudio.google.com/apikey
 pip install google-genai pillow
 
-# Optional MuAPI provider (no extra Python package required)
-export MUAPI_API_KEY="your-key"
+# Optional providers for logo generation (no extra Python package required)
+export ATLASCLOUD_API_KEY="your-key"   # --provider atlas
+export MUAPI_API_KEY="your-key"        # --provider muapi
 ```
+
+The scripts read only `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `ATLASCLOUD_API_KEY` and `MUAPI_API_KEY`, either from the environment or from a `KEY=value` line in `design/.env`, `~/.claude/skills/.env` or `~/.claude/.env` (other lines in those files are ignored).
 
 MuAPI uses the asynchronous model endpoint and prediction result API. See the
 [MuAPI API reference](https://muapi.ai/docs/api-reference) for authentication
@@ -325,5 +326,5 @@ logo workflow leaves at the provider default.
 
 ## Integration
 
-**External sub-skills:** brand, design-system, ui-styling
-**Related Skills:** frontend-design, ui-ux-pro-max, ai-multimodal, chrome-devtools
+**Sibling skills (installed alongside):** `brand` (guidelines, asset checks, token sync), `ui-ux-pro-max` (design systems, tokens, UI styling, stack guidance)
+**Optional:** `frontend-design` (if installed)

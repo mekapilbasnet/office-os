@@ -72,15 +72,11 @@ What Is → What Could Be → What Is → What Could Be → New Bliss
 
 Pattern breaks at 1/3 and 2/3 positions create engagement peaks.
 
-## Search Commands
+## Choosing a Strategy
 
-```bash
-# Find strategy by goal
-python .claude/skills/design-system/scripts/search-slides.py "investor pitch" -d strategy
-
-# Get emotion arc
-python .claude/skills/design-system/scripts/search-slides.py "series a funding" -d strategy --json
-```
+Pick the strategy from the "Matching Strategy to Context" table below and use
+its emotion arc as the slide order. For a design look-and-feel to pair with it,
+run `python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<deck topic> <mood>" --design-system`.
 
 ## Matching Strategy to Context
 

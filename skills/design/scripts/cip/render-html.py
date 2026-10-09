@@ -12,6 +12,8 @@ import json
 import os
 import sys
 import base64
+import html
+import re
 from pathlib import Path
 from datetime import datetime
 
@@ -106,15 +108,34 @@ def get_image_base64(image_path):
         return None
 
 
+def _tokens(text):
+    return [t for t in re.split(r"[^a-z0-9]+", str(text).lower()) if t]
+
+
 def get_deliverable_info(filename):
-    """Extract deliverable type from filename and get info"""
-    filename_lower = filename.lower()
+    """Extract deliverable type from filename and get info.
+
+    Keys must match as whole words of the filename ("car" matches
+    "acme-car-2026" but not "carlos-letterhead"). The longest matching key
+    wins, and among equally long keys the one nearest the end of the name
+    (the deliverable follows the brand in generated filenames).
+    """
+    tokens = _tokens(filename)
+    best = None  # (key length in words, position)
+    best_info = None
     for key, info in DELIVERABLE_INFO.items():
-        if key.replace(" ", "-") in filename_lower or key.replace(" ", "_") in filename_lower:
-            return info
+        key_tokens = _tokens(key)
+        n = len(key_tokens)
+        for pos in range(len(tokens) - n + 1):
+            if tokens[pos:pos + n] == key_tokens:
+                rank = (n, pos)
+                if best is None or rank > best:
+                    best, best_info = rank, info
+    if best_info:
+        return best_info
     # Default info
     return {
-        "title": filename.replace("-", " ").replace("_", " ").title(),
+        "title": str(filename).replace("-", " ").replace("_", " ").title(),
         "concept": "Brand identity application",
         "purpose": "Extends brand presence across touchpoints",
         "specs": "Custom specifications"
@@ -135,6 +156,10 @@ def generate_html(brand_name, industry, images_dir, output_path=None, style=None
         print(f"Error: No PNG images found in {images_dir}")
         return None
 
+    # Everything interpolated into the page is escaped
+    brand_html = html.escape(str(brand_name))
+    industry_text = str(industry)
+
     # Get CIP brief for brand info
     brief = get_cip_brief(brand_name, industry, style)
     style_info = brief.get("style", {})
@@ -146,7 +171,7 @@ def generate_html(brand_name, industry, images_dir, output_path=None, style=None
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{brand_name} - Corporate Identity Program</title>
+    <title>{brand_html} - Corporate Identity Program</title>
     <style>
         * {{
             margin: 0;
@@ -309,20 +334,20 @@ def generate_html(brand_name, industry, images_dir, output_path=None, style=None
 </head>
 <body>
     <section class="hero">
-        <h1>{brand_name}</h1>
+        <h1>{brand_html}</h1>
         <p class="subtitle">Corporate Identity Program</p>
         <div class="meta">
             <div class="meta-item">
                 <div class="meta-label">Industry</div>
-                <div class="meta-value">{industry_info.get("Industry", industry.title())}</div>
+                <div class="meta-value">{html.escape(str(industry_info.get("Industry", industry_text.title())))}</div>
             </div>
             <div class="meta-item">
                 <div class="meta-label">Style</div>
-                <div class="meta-value">{style_info.get("Style Name", "Corporate")}</div>
+                <div class="meta-value">{html.escape(str(style_info.get("Style Name", "Corporate")))}</div>
             </div>
             <div class="meta-item">
                 <div class="meta-label">Mood</div>
-                <div class="meta-value">{style_info.get("Mood", "Professional")}</div>
+                <div class="meta-value">{html.escape(str(style_info.get("Mood", "Professional")))}</div>
             </div>
             <div class="meta-item">
                 <div class="meta-label">Deliverables</div>
@@ -346,19 +371,21 @@ def generate_html(brand_name, industry, images_dir, output_path=None, style=None
 
         if img_base64:
             img_src = f"data:image/png;base64,{img_base64}"
+            lazy = ""  # lazy-loading is meaningless for inline data URIs
         else:
-            img_src = str(image_path)
+            img_src = html.escape(str(image_path), quote=True)
+            lazy = ' loading="lazy"'
 
         html_parts.append(f'''
         <div class="deliverable">
             <div class="deliverable-image">
-                <img src="{img_src}" alt="{info['title']}" loading="lazy">
+                <img src="{img_src}" alt="{html.escape(info['title'], quote=True)}"{lazy}>
             </div>
             <div class="deliverable-content">
-                <h3 class="deliverable-title">{info['title']}</h3>
-                <p class="deliverable-concept">{info['concept']}</p>
-                <p class="deliverable-purpose">{info['purpose']}</p>
-                <span class="deliverable-specs">{info['specs']}</span>
+                <h3 class="deliverable-title">{html.escape(info['title'])}</h3>
+                <p class="deliverable-concept">{html.escape(info['concept'])}</p>
+                <p class="deliverable-purpose">{html.escape(info['purpose'])}</p>
+                <span class="deliverable-specs">{html.escape(info['specs'])}</span>
             </div>
         </div>
 ''')
@@ -368,7 +395,7 @@ def generate_html(brand_name, industry, images_dir, output_path=None, style=None
     </section>
 
     <footer class="footer">
-        <p><strong>{brand_name}</strong> Corporate Identity Program</p>
+        <p><strong>{brand_html}</strong> Corporate Identity Program</p>
         <p>Generated on {datetime.now().strftime("%B %d, %Y")}</p>
         <p style="margin-top: 1rem; font-size: 0.8rem;">Powered by CIP Design Skill</p>
     </footer>
@@ -379,7 +406,7 @@ def generate_html(brand_name, industry, images_dir, output_path=None, style=None
     html_content = "".join(html_parts)
 
     # Save HTML
-    output_path = output_path or images_dir / f"{brand_name.lower().replace(' ', '-')}-cip-presentation.html"
+    output_path = output_path or images_dir / f"{re.sub(r'[^a-z0-9_-]+', '-', str(brand_name).lower()).strip('-') or 'brand'}-cip-presentation.html"
     output_path = Path(output_path)
 
     with open(output_path, "w", encoding="utf-8") as f:

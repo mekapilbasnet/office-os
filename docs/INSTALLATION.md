@@ -1,6 +1,6 @@
 # Installation Guide
 
-This is the detailed install reference. For the quick version, see the [README](../README.md).
+This is the single source for install, update and conflict details. The [README](../README.md) has the 3-line version.
 
 Office OS is the main skill. One install gives you the `/office-os` skill, its references, the global model-routing rule, the Haiku, Opus and reviewer subagents, and the model status line. Automatic routing is **on** by default. `/dynamic-routing` is a control-only command, not a second skill.
 
@@ -8,7 +8,7 @@ Office OS is the main skill. One install gives you the `/office-os` skill, its r
 
 - Claude Code
 - Git
-- Python 3 (`python3` on Linux/macOS/WSL, `python` or `py` on Windows). No packages needed.
+- Python 3.8 or newer (`python3` on Linux/macOS/WSL, `python` or `py` on Windows). No packages needed.
 
 ## Install
 
@@ -23,6 +23,8 @@ Windows), then run ./verify.sh (or .\verify.ps1 on Windows).
 Linux / macOS / WSL:
 
 ```bash
+git clone https://github.com/mekapilbasnet/office-os.git
+cd office-os
 ./install.sh          # preview only
 ./install.sh --apply  # install after reviewing the preview
 ./verify.sh           # static checks
@@ -31,23 +33,46 @@ Linux / macOS / WSL:
 Windows PowerShell:
 
 ```powershell
-.\install.ps1
-.\install.ps1 --apply
-.\verify.ps1
+git clone https://github.com/mekapilbasnet/office-os.git
+Set-Location office-os
+.\install.ps1          # preview only
+.\install.ps1 --apply  # install
+.\verify.ps1           # static checks
 ```
 
-Restart Claude Code afterwards. Routing applies even if you never type `/office-os`.
+If PowerShell blocks the scripts (restricted execution policy), run them like this:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 --apply
+powershell -ExecutionPolicy Bypass -File .\verify.ps1
+```
+
+Restart Claude Code afterwards, then run `/office-os`. Routing applies even if you never type `/office-os`.
 
 ## Update
 
 ```bash
+cd office-os
 git pull
 ./install.sh          # preview
 ./install.sh --apply
 ./verify.sh
 ```
 
+On Windows use `.\install.ps1` and `.\verify.ps1`. Restart Claude Code afterwards.
+
 Unchanged files are skipped, changed package files are upgraded with a backup, and your own edits are never overwritten silently.
+
+## What the installer writes (under `~/.claude`)
+
+- `skills/office-os/`: the skill and its routing tools
+- `rules/model-routing.md`: the routing rule (swapped for an OFF rule when disabled)
+- `agents/`: the `Explore`, `deep-reasoner` and `reviewer` subagents
+- `commands/dynamic-routing.md`: the control command
+- Status line settings, only if you have none
+- `office-os-routing/`: install state and backups, so changes can be rolled back
+
+To use another folder, set `CLAUDE_CONFIG_DIR` or pass `--config-dir`.
 
 ## What the installer will and will not touch
 
@@ -55,35 +80,27 @@ Unchanged files are skipped, changed package files are upgraded with a backup, a
 - If you customized an installed Office OS file, or have a conflicting rule or agent, the installer **stops** and lists the conflicts. Use `--replace` only if you approve replacing all of them.
 - Exact original Office OS files and original v3 routing files upgrade cleanly, with backup.
 - An existing `CLAUDE.md` is never modified.
-- A user-level main model is set to Sonnet only if none is configured, unless you pass `--set-main-model`.
-- `CLAUDE_CONFIG_DIR` and `--config-dir` choose a different config folder (default `~/.claude`).
+- Main model: if you already set one, it is kept. If you have none, the installer sets `model: sonnet`. `--set-main-model` also switches an existing different model to Sonnet.
 
 ## Standalone Dynamic Routing already installed
 
 Preview and uninstall it with its own manager first. The integrated installer refuses to install next to it, so two routing policies never compete. Your backups stay available.
 
-## Managing routing
+## Managing, rolling back and uninstalling
 
-- `/dynamic-routing on|off|status`, then restart Claude Code so the rule refreshes.
-- `/dynamic-routing profile economy|balanced|quality`
-- `/dynamic-routing fallback status` (changing the fallback is opt-in and affects all subagents)
-- `/dynamic-routing compatibility` checks your Claude Code version.
-- `/office-os routing diagnose|verify|plan` for the full manager.
-- Without shell access, run `~/.claude/skills/office-os/routing-tools/routing_manager.py` directly.
-
-Full list: [COMMANDS.md](COMMANDS.md).
+Turn routing on or off, pick a profile, set a fallback, roll back or uninstall: see [COMMANDS.md](COMMANDS.md#manage--uninstall).
 
 ## Checking it worked
 
 `./verify.sh` is a static check. It does **not** prove which model Claude Code ran. For live checks see [SMOKE_TESTS.md](../office-os/routing-tools/SMOKE_TESTS.md) and [RELEASE_CHECKLIST.md](../office-os/routing-tools/RELEASE_CHECKLIST.md).
 
-## Optional: Ponytail
+## Optional extras
 
-Office OS routes broad codebase audits to **Ponytail** when it is installed. Not bundled:
+**Ponytail** and **Caveman** are not bundled. Office OS uses them only if you install them. Ponytail helps with broad codebase audits; Caveman compresses tokens and gives lean build, fix and review skills.
 
 ```
 /plugin marketplace add DietrichGebert/ponytail
 /plugin install ponytail@ponytail
 ```
 
-See https://github.com/DietrichGebert/ponytail.
+See https://github.com/DietrichGebert/ponytail. Install Caveman from its own project page.

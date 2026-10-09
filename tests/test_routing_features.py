@@ -1,24 +1,14 @@
 import json
 import os
 from pathlib import Path
-import subprocess
-import sys
-import tempfile
 import unittest
-from unittest import mock
 
-ROOT=Path(__file__).resolve().parents[1]
-MANAGER=ROOT/'office-os/routing-tools/routing_manager.py'
-USAGE=ROOT/'office-os/routing-tools/usage_report.py'
-SMOKE=ROOT/'office-os/routing-tools/scripts/live_smoke.py'
+try:  # works for `discover -s tests` and `python -m unittest tests.<module>`
+    from _helpers import MANAGER, SMOKE, STATUSLINE, USAGE, ConfigDirCase, run
+except ImportError:
+    from tests._helpers import MANAGER, SMOKE, STATUSLINE, USAGE, ConfigDirCase, run
 
-class RoutingFeatures(unittest.TestCase):
-    def setUp(self):
-        self.tmp=tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
-        self.cfg=Path(self.tmp.name)/'.claude'
-    def cli(self,*args):
-        return subprocess.run([sys.executable,str(MANAGER),*args,'--config-dir',str(self.cfg)],capture_output=True,text=True,timeout=30)
+class RoutingFeatures(ConfigDirCase):
     def install(self):
         r=self.cli('install','--apply')
         self.assertEqual(r.returncode,0,r.stdout+r.stderr)
@@ -97,12 +87,12 @@ class RoutingFeatures(unittest.TestCase):
     def test_compatibility_fake_claude_version(self):
         fake=Path(self.tmp.name)/'bin';fake.mkdir()
         cmd=fake/'claude';cmd.write_text('#!/bin/sh\necho "2.1.284 (Claude Code)"\n');cmd.chmod(0o755)
-        env=dict(os.environ,PATH=str(fake)+os.pathsep+os.getenv('PATH',''))
-        p=subprocess.run([sys.executable,str(MANAGER),'compatibility','--strict','--config-dir',str(self.cfg)],capture_output=True,text=True,env=env)
+        env=dict(self.env,PATH=str(fake)+os.pathsep+os.getenv('PATH',''))
+        p=run([MANAGER,'compatibility','--strict','--config-dir',self.cfg],env=env)
         self.assertEqual(p.returncode,0,p.stdout+p.stderr)
         self.assertIn('PASS',p.stdout)
         cmd.write_text('#!/bin/sh\necho "2.1.200 (Claude Code)"\n')
-        q=subprocess.run([sys.executable,str(MANAGER),'compatibility','--strict','--config-dir',str(self.cfg)],capture_output=True,text=True,env=env)
+        q=run([MANAGER,'compatibility','--strict','--config-dir',self.cfg],env=env)
         self.assertEqual(q.returncode,1)
     def test_usage_reports_actual_model_keys_and_budget(self):
         path=Path(self.tmp.name)/'claude.jsonl'
@@ -118,22 +108,21 @@ class RoutingFeatures(unittest.TestCase):
         self.assertEqual(len(history.strip().splitlines()),1)
     def test_usage_rejects_input_without_result(self):
         src=Path(self.tmp.name)/'fake.json';src.write_text(json.dumps({'type':'assistant','message':'NOT A RESULT'}))
-        q=subprocess.run([sys.executable,str(USAGE),str(src)],capture_output=True,text=True)
+        q=run([USAGE,src],env=self.env)
         self.assertEqual(q.returncode,1)
     def test_live_smoke_is_dry_run_by_default(self):
-        r=subprocess.run([sys.executable,str(SMOKE)],capture_output=True,text=True)
+        r=run([SMOKE],env=self.env)
         self.assertEqual(r.returncode,0)
         self.assertIn('DRY RUN',r.stdout)
     def test_statusline_cost_and_profile_are_observed_only(self):
         self.install()
-        env=dict(os.environ,CLAUDE_CONFIG_DIR=str(self.cfg))
         payload={'model':{'display_name':'Sonnet'},'cost':{'total_cost_usd':1.256}}
-        status=ROOT/'office-os/routing-tools/scripts/statusline.py'
-        out=subprocess.run([sys.executable,str(status)],input=json.dumps(payload),capture_output=True,text=True,env=env)
+        status=STATUSLINE
+        out=run([status],input=json.dumps(payload),env=self.env)
         self.assertIn('est. API: $1.26',out.stdout)
         self.assertIn('routing: balanced',out.stdout)
         self.assertEqual(self.cli('off','--apply').returncode,0)
-        off=subprocess.run([sys.executable,str(status)],input=json.dumps(payload),capture_output=True,text=True,env=env)
+        off=run([status],input=json.dumps(payload),env=self.env)
         self.assertIn('routing: OFF',off.stdout)
 
     def test_export_is_sanitized_and_does_not_overwrite(self):
@@ -156,6 +145,6 @@ class RoutingFeatures(unittest.TestCase):
         installed=self.cfg/'skills/office-os/routing-tools'
         self.assertTrue((installed/'usage_report.py').is_file())
         self.assertTrue((installed/'scripts/live_smoke.py').is_file())
-        self.assertEqual(subprocess.run([sys.executable,str(installed/'routing_manager.py'),'profile','--config-dir',str(self.cfg)],capture_output=True).returncode,0)
+        self.assertEqual(run([installed/'routing_manager.py','profile','--config-dir',self.cfg],env=self.env).returncode,0)
 
 if __name__=='__main__': unittest.main()

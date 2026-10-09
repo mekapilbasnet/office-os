@@ -4,11 +4,15 @@
 CIP Design Core - BM25 search engine for Corporate Identity Program design guidelines
 """
 
-import csv
 import re
+import sys
 from pathlib import Path
-from math import log
-from collections import defaultdict
+
+# Shared helpers live one directory up (design/scripts/_common.py)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from _common import load_csv as _load_csv  # noqa: E402
+from _common import search as _search_domain  # noqa: E402
+from _common import search_all as _search_all  # noqa: E402
 
 # ============ CONFIGURATION ============
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "cip"
@@ -38,99 +42,7 @@ CSV_CONFIG = {
 }
 
 
-# ============ BM25 IMPLEMENTATION ============
-class BM25:
-    """BM25 ranking algorithm for text search"""
-
-    def __init__(self, k1=1.5, b=0.75):
-        self.k1 = k1
-        self.b = b
-        self.corpus = []
-        self.doc_lengths = []
-        self.avgdl = 0
-        self.idf = {}
-        self.doc_freqs = defaultdict(int)
-        self.N = 0
-
-    def tokenize(self, text):
-        """Lowercase, split, remove punctuation, filter short words"""
-        text = re.sub(r'[^\w\s]', ' ', str(text).lower())
-        return [w for w in text.split() if len(w) > 2]
-
-    def fit(self, documents):
-        """Build BM25 index from documents"""
-        self.corpus = [self.tokenize(doc) for doc in documents]
-        self.N = len(self.corpus)
-        if self.N == 0:
-            return
-        self.doc_lengths = [len(doc) for doc in self.corpus]
-        self.avgdl = sum(self.doc_lengths) / self.N
-
-        for doc in self.corpus:
-            seen = set()
-            for word in doc:
-                if word not in seen:
-                    self.doc_freqs[word] += 1
-                    seen.add(word)
-
-        for word, freq in self.doc_freqs.items():
-            self.idf[word] = log((self.N - freq + 0.5) / (freq + 0.5) + 1)
-
-    def score(self, query):
-        """Score all documents against query"""
-        query_tokens = self.tokenize(query)
-        scores = []
-
-        for idx, doc in enumerate(self.corpus):
-            score = 0
-            doc_len = self.doc_lengths[idx]
-            term_freqs = defaultdict(int)
-            for word in doc:
-                term_freqs[word] += 1
-
-            for token in query_tokens:
-                if token in self.idf:
-                    tf = term_freqs[token]
-                    idf = self.idf[token]
-                    numerator = tf * (self.k1 + 1)
-                    denominator = tf + self.k1 * (1 - self.b + self.b * doc_len / self.avgdl)
-                    score += idf * numerator / denominator
-
-            scores.append((idx, score))
-
-        return sorted(scores, key=lambda x: x[1], reverse=True)
-
-
-# ============ SEARCH FUNCTIONS ============
-def _load_csv(filepath):
-    """Load CSV and return list of dicts"""
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return list(csv.DictReader(f))
-
-
-def _search_csv(filepath, search_cols, output_cols, query, max_results):
-    """Core search function using BM25"""
-    if not filepath.exists():
-        return []
-
-    data = _load_csv(filepath)
-
-    # Build documents from search columns
-    documents = [" ".join(str(row.get(col, "")) for col in search_cols) for row in data]
-
-    # BM25 search
-    bm25 = BM25()
-    bm25.fit(documents)
-    ranked = bm25.score(query)
-
-    # Get top results with score > 0
-    results = []
-    for idx, score in ranked[:max_results]:
-        if score > 0:
-            row = data[idx]
-            results.append({col: row.get(col, "") for col in output_cols if col in row})
-
-    return results
+# BM25, CSV loading and search live in ../_common.py (cached per file).
 
 
 def detect_domain(query):
@@ -153,32 +65,110 @@ def search(query, domain=None, max_results=MAX_RESULTS):
     """Main search function with auto-domain detection"""
     if domain is None:
         domain = detect_domain(query)
-
-    config = CSV_CONFIG.get(domain, CSV_CONFIG["deliverable"])
-    filepath = DATA_DIR / config["file"]
-
-    if not filepath.exists():
-        return {"error": f"File not found: {filepath}", "domain": domain}
-
-    results = _search_csv(filepath, config["search_cols"], config["output_cols"], query, max_results)
-
-    return {
-        "domain": domain,
-        "query": query,
-        "file": config["file"],
-        "count": len(results),
-        "results": results
-    }
+    if domain not in CSV_CONFIG:
+        domain = "deliverable"
+    return _search_domain(DATA_DIR, CSV_CONFIG, query, domain, max_results)
 
 
 def search_all(query, max_results=2):
     """Search across all domains and combine results"""
-    all_results = {}
-    for domain in CSV_CONFIG.keys():
-        result = search(query, domain, max_results)
-        if result.get("results"):
-            all_results[domain] = result["results"]
-    return all_results
+    return _search_all(search, CSV_CONFIG, query, max_results)
+
+
+
+_DELIVERABLE_SPLIT = re.compile(r"[,;/\n]+|\s+&\s+|\s+and\s+", re.IGNORECASE)
+
+
+def _stem(word):
+    """Very small plural normaliser: cards -> card, uniforms -> uniform."""
+    word = word.lower()
+    if len(word) > 3 and word.endswith("ies"):
+        return word[:-3] + "y"
+    if len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+        return word[:-1]
+    return word
+
+
+# Adjectives that appear in many deliverable keyword lists; matching on them
+# alone ("Premium stationery" -> Gift Box) produces confident wrong rows.
+_GENERIC_WORDS = frozenset({
+    "premium", "digital", "custom", "customized", "branded", "corporate",
+    "office", "company", "professional", "modern", "luxury", "standard",
+    "basic", "printed", "print", "branding", "brand", "quality", "new",
+})
+
+# Industry text wording -> deliverable-name wording (applied to stemmed words).
+_DELIVERABLE_SYNONYMS = {"vehicle": "van"}
+
+
+def _deliverable_text_stems(row):
+    text = " ".join(str(row.get(k, "")) for k in ("Deliverable", "Keywords"))
+    return {_stem(w) for w in re.findall(r"\w+", text.lower())}
+
+
+def _exact_deliverable(stems):
+    """Return the deliverable row whose name equals the given stemmed words."""
+    for row in _load_csv(DATA_DIR / CSV_CONFIG["deliverable"]["file"]):
+        name = [_stem(w) for w in re.findall(r"\w+", row.get("Deliverable", "").lower())]
+        if name == list(stems):
+            return {col: row.get(col, "") for col in CSV_CONFIG["deliverable"]["output_cols"] if col in row}
+    return None
+
+
+def parse_key_deliverables(text, limit=5):
+    """Turn the free-text "Key Deliverables" cell into deliverable rows.
+
+    The industries CSV stores things like "Business cards office signage
+    digital templates vehicle" (no separators). Splitting on whitespace and
+    searching each word returns wrong rows, so instead:
+
+    1. split on commas / semicolons / slashes / "and" / "&" into phrases;
+    2. inside each phrase, walk the words left to right and, at each position,
+       prefer a run (up to 3 words) that exactly equals a known deliverable
+       name ("Business cards" -> Business Card); otherwise a run (2 words,
+       then 1) whose best BM25 match really contains every word of the run in
+       its name or keywords;
+    3. de-duplicate, keep order, cap at `limit`.
+    """
+    results = []
+    seen = set()
+
+    def add(row):
+        name = row.get("Deliverable")
+        if name not in seen:
+            seen.add(name)
+            results.append(row)
+
+    for phrase in _DELIVERABLE_SPLIT.split(str(text or "")):
+        words = [_DELIVERABLE_SYNONYMS.get(_stem(w), _stem(w)) for w in re.findall(r"\w+", phrase)]
+        i = 0
+        while i < len(words) and len(results) < limit:
+            step = 0
+            for n in (3, 2, 1):  # exact deliverable names first
+                chunk = words[i:i + n]
+                if len(chunk) == n:
+                    row = _exact_deliverable(chunk)
+                    if row:
+                        add(row)
+                        step = n
+                        break
+            if not step:
+                for n in (2, 1):  # then keyword-backed fuzzy matches
+                    chunk = words[i:i + n]
+                    if len(chunk) < n:
+                        continue
+                    # Generic adjectives never justify a match on their own
+                    specific = [w for w in chunk if w not in _GENERIC_WORDS]
+                    if not specific:
+                        step = n
+                        break
+                    found = search(" ".join(specific), "deliverable", 1).get("results") or []
+                    if found and all(w in _deliverable_text_stems(found[0]) for w in specific):
+                        add(found[0])
+                        step = n
+                        break
+            i += step or 1
+    return results[:limit]
 
 
 def get_cip_brief(brand_name, industry_query, style_query=None):
@@ -193,12 +183,7 @@ def get_cip_brief(brand_name, industry_query, style_query=None):
     style = style_results.get("results", [{}])[0] if style_results.get("results") else {}
 
     # Get recommended deliverables for the industry
-    key_deliverables = industry.get("Key Deliverables", "").split()
-    deliverable_results = []
-    for d in key_deliverables[:5]:
-        result = search(d, "deliverable", 1)
-        if result.get("results"):
-            deliverable_results.append(result["results"][0])
+    deliverable_results = parse_key_deliverables(industry.get("Key Deliverables", ""))
 
     return {
         "brand_name": brand_name,

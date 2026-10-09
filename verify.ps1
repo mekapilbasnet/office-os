@@ -1,18 +1,18 @@
 param([Parameter(ValueFromRemainingArguments=$true)][string[]]$RoutingArgs)
 $ErrorActionPreference = 'Stop'
-$python = if (Get-Command py -ErrorAction SilentlyContinue) { 'py' } else { 'python' }
-$prefix = if ($python -eq 'py') { @('-3') } else { @() }
+if (Get-Command py -ErrorAction SilentlyContinue) {
+  $python = 'py'; $prefix = @('-3')
+} elseif (Get-Command python -ErrorAction SilentlyContinue) {
+  $python = 'python'; $prefix = @()
+} else {
+  [Console]::Error.WriteLine('ERROR: Python 3.8 or newer was not found (tried py and python). Install it from https://www.python.org/downloads/ and rerun.')
+  exit 1
+}
 $scriptPath = Join-Path $PSScriptRoot 'office-os/routing-tools/routing_manager.py'
 if ($env:OFFICE_OS_DEBUG) {
   Write-Host "DEBUG python resolved to: $((Get-Command $python).Source)"
   Write-Host "DEBUG scriptPath: $scriptPath exists: $(Test-Path $scriptPath)"
   Write-Host "DEBUG args: verify $RoutingArgs"
 }
-$outFile = [System.IO.Path]::GetTempFileName()
-$errFile = [System.IO.Path]::GetTempFileName()
-$proc = Start-Process -FilePath $python -ArgumentList (@($prefix) + @($scriptPath, 'verify') + $RoutingArgs) -NoNewWindow -Wait -PassThru -RedirectStandardOutput $outFile -RedirectStandardError $errFile
-Get-Content $outFile | Write-Host
-Get-Content $errFile | Write-Host
-$exitCode = $proc.ExitCode
-Remove-Item $outFile, $errFile -ErrorAction SilentlyContinue
-exit $exitCode
+& $python @prefix $scriptPath verify @RoutingArgs
+exit $LASTEXITCODE

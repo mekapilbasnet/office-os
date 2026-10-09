@@ -28,6 +28,8 @@ import argparse
 import ipaddress
 import json
 import os
+import re
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -35,27 +37,11 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
+# Shared helpers live one directory up (design/scripts/_common.py)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from _common import load_env  # noqa: E402
 
-# Load environment variables
-def load_env():
-    """Load .env files in priority order"""
-    env_paths = [
-        Path(__file__).parent.parent.parent / ".env",
-        Path.home() / ".claude" / "skills" / ".env",
-        Path.home() / ".claude" / ".env",
-    ]
-
-    for env_path in env_paths:
-        if env_path.exists():
-            with open(env_path) as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        key, value = line.split("=", 1)
-                        if key not in os.environ:
-                            os.environ[key] = value.strip("\"'")
-
-
+# Only loads GEMINI_API_KEY, GOOGLE_API_KEY, ATLASCLOUD_API_KEY, MUAPI_API_KEY
 load_env()
 
 
@@ -74,6 +60,8 @@ ATLAS_API_BASE = "https://api.atlascloud.ai/api/v1"
 MUAPI_MODEL = "nano-banana"
 MUAPI_MODELS = ("nano-banana", "nano-banana-pro")
 MUAPI_API_BASE = "https://api.muapi.ai/api/v1"
+MUAPI_API_HOST = urlparse(MUAPI_API_BASE).hostname
+API_HOSTS = frozenset({urlparse(ATLAS_API_BASE).hostname, MUAPI_API_HOST})
 HTTP_USER_AGENT = "ui-ux-pro-max/2.5 (logo generation)"
 ATLAS_POLL_INTERVAL = 2
 ATLAS_MAX_POLLS = 90
@@ -92,7 +80,7 @@ Style requirements:
 - Simple, scalable design that works at any size
 - Clear silhouette and recognizable shape
 - Professional quality suitable for business use
-- Centered composition on plain white or transparent background
+- Centered composition on a plain white background (no transparency)
 - No text unless specifically requested
 - High contrast and clear edges
 - Square format, perfectly centered
@@ -151,12 +139,59 @@ def enhance_prompt(base_prompt, style=None, industry=None, brand_name=None):
     return LOGO_PROMPT_TEMPLATE.format(prompt=combined)
 
 
+_AUTH_HEADERS = ("authorization", "x-api-key", "cookie", "proxy-authorization")
+
+
+def _slug(text, fallback="logo"):
+    """Filesystem-safe lowercase slug (spaces become underscores)."""
+    slug = re.sub(r"[^\w-]+", "_", str(text or "").strip().lower()).strip("_")
+    return slug or fallback
+
+
+def build_batch_styles(brand_name=None):
+    """Return (style_key, description) pairs for batch generation.
+
+    The lettermark variant uses the first letter of the brand name.
+    """
+    letter = ""
+    for ch in str(brand_name or ""):
+        if ch.isalpha():
+            letter = ch.upper()
+            break
+    lettermark = (
+        f"Stylized letter '{letter}' as monogram"
+        if letter
+        else "Stylized initial letter as monogram"
+    )
+    return [
+        ("minimalist", "Clean, simple geometric shape with minimal details"),
+        ("modern", "Sleek gradient with tech-forward aesthetic"),
+        ("geometric", "Abstract geometric patterns, mathematical precision"),
+        ("gradient", "Vibrant color transitions, modern digital feel"),
+        ("abstract", "Conceptual symbolic representation"),
+        ("lettermark", lettermark),
+        ("negative-space", "Clever use of negative space, hidden meaning"),
+        ("lineart", "Single stroke continuous line design"),
+        ("3d", "Dimensional design with depth and shadows"),
+    ]
+
+
 class _SafeRedirectHandler(HTTPRedirectHandler):
-    """Reject redirects to non-public or non-HTTPS destinations."""
+    """Reject redirects to non-public or non-HTTPS destinations and never
+    carry credentials to a different host."""
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         _validate_public_https_url(newurl)
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
+        new_request = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if new_request is not None:
+            old_host = (urlparse(req.full_url).hostname or "").lower()
+            new_host = (urlparse(newurl).hostname or "").lower()
+            if old_host != new_host:
+                for store in (new_request.headers, new_request.unredirected_hdrs):
+                    for name in list(store):
+                        if name.lower() in _AUTH_HEADERS:
+                            del store[name]
+        return new_request
 
 
 def _validate_public_https_url(url):
@@ -193,6 +228,10 @@ def _json_request(
         auth_value = api_key
     else:
         raise ValueError("Unsupported API key header")
+
+    host = (urlparse(url).hostname or "").lower()
+    if urlparse(url).scheme != "https" or host not in API_HOSTS:
+        raise ValueError(f"Refusing to send an API key to non-provider host: {host}")
 
     body = json.dumps(payload).encode("utf-8") if payload is not None else None
     request = Request(
@@ -352,6 +391,12 @@ def _muapi_result_url(response):
             raise RuntimeError(
                 "MuAPI creation response did not include a valid HTTPS result URL"
             ) from exc
+        # The API key is sent when polling, so only ever poll the API host.
+        if (urlparse(result_url).hostname or "").lower() != MUAPI_API_HOST:
+            raise RuntimeError(
+                f"MuAPI result URL must be on {MUAPI_API_HOST}; refusing to send "
+                "the API key to another host"
+            )
         return result_url
 
     raise RuntimeError(
@@ -511,7 +556,7 @@ def generate_logo(
 
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005
-        brand_slug = brand_name.lower().replace(" ", "_") if brand_name else "logo"
+        brand_slug = _slug(brand_name)
         output_path = f"{brand_slug}_{timestamp}.png"
 
     if provider == "atlas":
@@ -569,21 +614,11 @@ def generate_batch(
     provider="gemini",
     atlas_model=ATLAS_MODEL,
     muapi_model=MUAPI_MODEL,
+    industry=None,
 ):
     """Generate multiple logo variants with different styles"""
 
-    # Select appropriate styles for batch generation
-    batch_styles = [
-        ("minimalist", "Clean, simple geometric shape with minimal details"),
-        ("modern", "Sleek gradient with tech-forward aesthetic"),
-        ("geometric", "Abstract geometric patterns, mathematical precision"),
-        ("gradient", "Vibrant color transitions, modern digital feel"),
-        ("abstract", "Conceptual symbolic representation"),
-        ("lettermark", "Stylized letter 'U' as monogram"),
-        ("negative-space", "Clever use of negative space, hidden meaning"),
-        ("lineart", "Single stroke continuous line design"),
-        ("3d", "Dimensional design with depth and shadows"),
-    ]
+    batch_styles = build_batch_styles(brand_name)
 
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
@@ -599,7 +634,7 @@ def generate_batch(
     ratio = aspect_ratio if aspect_ratio in ASPECT_RATIOS else DEFAULT_ASPECT_RATIO
 
     print(f"\n{'=' * 60}")
-    print(f"  BATCH LOGO GENERATION: {brand_name}")
+    print(f"  BATCH LOGO GENERATION: {brand_name or '(no brand name)'}")
     print(f"  Model: {model_label}")
     print(f"  Aspect Ratio: {ratio}")
     print(f"  Variants: {count}")
@@ -615,7 +650,7 @@ def generate_batch(
             enhanced_prompt = f"{brand_context}, {enhanced_prompt}"
 
         # Generate filename
-        filename = f"{brand_name.lower().replace(' ', '_')}_{style_key}_{i + 1:02d}.png"
+        filename = f"{_slug(brand_name)}_{style_key}_{i + 1:02d}.png"
         output_path = os.path.join(output_dir, filename)
 
         print(f"[{i + 1}/{count}] Generating {style_key} variant...")
@@ -623,7 +658,7 @@ def generate_batch(
         result = generate_logo(
             prompt=enhanced_prompt,
             style=style_key,
-            industry="tech",
+            industry=industry,
             brand_name=brand_name,
             output_path=output_path,
             use_pro=use_pro,
@@ -735,12 +770,10 @@ def main():
 
     # Batch mode
     if args.batch:
-        output_dir = (
-            args.output_dir or f"./{args.brand.lower().replace(' ', '_')}_logos"
-        )
-        generate_batch(
+        output_dir = args.output_dir or f"./{_slug(args.brand)}_logos"
+        results = generate_batch(
             prompt=prompt,
-            brand_name=args.brand or "Logo",
+            brand_name=args.brand,
             count=args.batch,
             output_dir=output_dir,
             use_pro=args.pro,
@@ -749,9 +782,13 @@ def main():
             provider=args.provider,
             atlas_model=args.atlas_model,
             muapi_model=args.muapi_model,
+            industry=args.industry,
         )
+        expected = min(args.batch, len(build_batch_styles(args.brand)))
+        if len(results) < expected:
+            sys.exit(1)
     else:
-        generate_logo(
+        result = generate_logo(
             prompt=prompt,
             style=args.style,
             industry=args.industry,
@@ -763,6 +800,8 @@ def main():
             atlas_model=args.atlas_model,
             muapi_model=args.muapi_model,
         )
+        if not result:
+            sys.exit(1)
 
 
 if __name__ == "__main__":

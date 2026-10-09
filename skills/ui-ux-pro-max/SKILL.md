@@ -36,15 +36,15 @@ For the full rule list per category (all 119 UX guidelines with rationale), read
 
 ## Running the search tool
 
-The search script lives inside this skill's own directory, not the project directory. Always invoke it by its full path — do not assume a particular working directory:
+The search script lives next to this `SKILL.md`, in `<skill-dir>/scripts/search.py` — normally `~/.claude/skills/ui-ux-pro-max/scripts/search.py` for a user-scope install (use the skill's actual directory if it was installed elsewhere, e.g. `.claude/skills/ui-ux-pro-max/` inside a project). It is not in the project directory, so always invoke it by its full path and do not assume a particular working directory. All commands below use the `~/.claude/skills/...` form:
+
+**Windows:** in cmd or PowerShell `~` may not expand; use `%USERPROFILE%\.claude\skills\ui-ux-pro-max\scripts\search.py` (cmd) or `$HOME\.claude\skills\ui-ux-pro-max\scripts\search.py` (PowerShell) instead.
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "<query>" --domain <domain>
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain>
 ```
 
-If `python` is not found, try `python3`, then `py -3`. Requires Python 3.x, no external dependencies (see README for install instructions if Python is missing).
-
-## Workflow
+If `python` is not found, try `python3`, then `py -3`. Requires Python 3.x and no external packages. If Python is missing, install it from python.org or your package manager (e.g. `sudo apt install python3`, `brew install python`).
 
 ## Query Contract
 
@@ -75,14 +75,14 @@ Extract from the user request:
 Use `--design-system` when the task needs a coherent product-wide visual direction:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]
 ```
 
 This aggregates product/style/color/landing/typography matches, applies reasoning rules from `ui-reasoning.csv`, and returns pattern, style, colors, typography, effects, and anti-patterns to avoid.
 
 **Example:**
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "beauty spa wellness service" --design-system -p "Serenity Spa"
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "beauty spa wellness service" --design-system -p "Serenity Spa"
 ```
 
 ### Step 2b: Persist Design System (Master + Overrides Pattern)
@@ -90,7 +90,7 @@ python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "b
 To save the design system for retrieval across sessions, add `--persist` **and always pass `--output-dir` pointed at the project root** — without it, files are written relative to whatever directory the tool happens to run from:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "<query>" --design-system --persist -p "Project Name" --output-dir "<project-root>"
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --output-dir "<project-root>"
 ```
 
 This creates:
@@ -113,7 +113,7 @@ Read an existing `MASTER.md` before deciding whether `--force` is justified. Nev
 Three optional 1-10 sliders that tune `--design-system` output without changing your query. Add any combination of them to the same command:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "<query>" --design-system --variance <1-10> --motion <1-10> --density <1-10>
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --variance <1-10> --motion <1-10> --density <1-10>
 ```
 
 | Dial | Low (1-3) | Mid (4-7) | High (8-10) |
@@ -128,13 +128,13 @@ python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "<
 
 **Example:**
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "internal analytics dashboard" --design-system --variance 8 --motion 7 --density 8 -p "Ops Console"
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "internal analytics dashboard" --design-system --variance 8 --motion 7 --density 8 -p "Ops Console"
 ```
 
 ### Step 3: Supplement with Detailed Searches (as needed)
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "<keyword>" --domain <domain> [-n <max_results>]
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --domain <domain> [-n <max_results>]
 ```
 
 | Need | Domain | Example |
@@ -157,7 +157,7 @@ Domain is auto-detected from the query if `--domain` is omitted — but auto-det
 ### Step 4: Stack Guidelines
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "<keyword>" --stack <stack>
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack <stack>
 ```
 
 **Available stacks:** `react`, `nextjs`, `vue`, `svelte`, `astro`, `nuxtjs`, `nuxt-ui`, `angular`, `laravel`, `swiftui`, `react-native`, `flutter`, `jetpack-compose`, `html-tailwind`, `shadcn`, `threejs`, `javafx`, `wpf`, `winui`, `avalonia`, `uno`, `uwp`. Use the stack detected in Step 1.
@@ -177,13 +177,13 @@ Do not fabricate output. Instead:
 
 ```bash
 # Step 2: design system
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "AI search tool modern minimal" --design-system -p "AI Search"
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "AI search tool modern minimal" --design-system -p "AI Search"
 
 # Step 3: supplement
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "keyboard focus modal" --domain ux
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "keyboard focus modal" --domain ux
 
 # Step 4: stack guidelines
-python "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py" "suspense streaming bundle" --stack nextjs
+python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "suspense streaming bundle" --stack nextjs
 ```
 
 Then synthesize the design system + detailed searches and implement.

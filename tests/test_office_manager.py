@@ -1,30 +1,13 @@
-import copy
-import importlib.util
 import json
-import os
-from pathlib import Path
-import subprocess
-import sys
-import tempfile
 import unittest
-from unittest import mock
 
-ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location('manager', ROOT / 'office-os/routing-tools/routing_manager.py')
-manager = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(manager)
+try:  # works for `discover -s tests` and `python -m unittest tests.<module>`
+    from _helpers import ROOT, STATUSLINE, SUBAGENT_STATUSLINE, ConfigDirCase, run
+except ImportError:
+    from tests._helpers import ROOT, STATUSLINE, SUBAGENT_STATUSLINE, ConfigDirCase, run
 
 
-class ManagerTests(unittest.TestCase):
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
-        self.cfg = Path(self.tmp.name) / '.claude'
-
-    def cli(self, *args):
-        return subprocess.run([sys.executable, str(ROOT / 'office-os/routing-tools/routing_manager.py'), *args,
-                               '--config-dir', str(self.cfg)], capture_output=True, text=True)
-
+class ManagerTests(ConfigDirCase):
     def test_read_only_preview(self):
         result = self.cli('plan')
         self.assertEqual(result.returncode, 0)
@@ -114,7 +97,7 @@ class ManagerTests(unittest.TestCase):
     def test_installed_manager_works_without_original_sources(self):
         self.assertEqual(self.cli('install', '--apply').returncode, 0)
         installed = self.cfg / 'skills/office-os/routing-tools/routing_manager.py'
-        result = subprocess.run([sys.executable, str(installed), 'verify', '--config-dir', str(self.cfg)], capture_output=True, text=True)
+        result = run([installed, 'verify', '--config-dir', self.cfg], env=self.env)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn('STATIC VERIFICATION: PASSED', result.stdout)
 
@@ -129,11 +112,11 @@ class ManagerTests(unittest.TestCase):
         self.assertEqual(json.loads(path.read_text())['myLaterEdit'], 'do not lose')
 
     def test_status_script_actual_model_and_subagent_json(self):
-        script = ROOT / 'office-os/routing-tools/scripts/statusline.py'
-        main = subprocess.run([sys.executable, str(script)], input=json.dumps({'model': {'display_name': 'Opus 5.5'}, 'workspace': {'current_dir': '/tmp/x'}, 'context_window': {'used_percentage': 38}}), capture_output=True, text=True)
+        script = STATUSLINE
+        main = run([script], env=self.env, input=json.dumps({'model': {'display_name': 'Opus 5.5'}, 'workspace': {'current_dir': '/tmp/x'}, 'context_window': {'used_percentage': 38}}))
         self.assertEqual(main.returncode, 0)
         self.assertIn('Model: Opus 5.5', main.stdout)
-        sub = subprocess.run([sys.executable, str(ROOT / 'office-os/routing-tools/scripts/subagent_statusline.py')], input=json.dumps({'tasks':[{'id':'7','name':'Explore','status':'running','model':'claude-haiku-example','description':'Find files'}]}), capture_output=True, text=True)
+        sub = run([SUBAGENT_STATUSLINE], env=self.env, input=json.dumps({'tasks':[{'id':'7','name':'Explore','status':'running','model':'claude-haiku-example','description':'Find files'}]}))
         row = json.loads(sub.stdout)
         self.assertIn('claude-haiku-example', row['content'])
         self.assertEqual(row['id'], '7')
@@ -275,7 +258,7 @@ class ManagerTests(unittest.TestCase):
         custom=self.cfg/'skills/office-os/references/custom-user-workflow.md'
         custom.write_text('USER DATA')
         installed=self.cfg/'skills/office-os/routing-tools/routing_manager.py'
-        result=subprocess.run([sys.executable,str(installed),'install','--apply','--config-dir',str(self.cfg)],capture_output=True,text=True)
+        result=run([installed,'install','--apply','--config-dir',self.cfg],env=self.env)
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual(custom.read_text(),'USER DATA')
         self.assertEqual(self.cli('uninstall','--apply').returncode,0)

@@ -1,6 +1,6 @@
 ---
 name: office-os
-description: Coordinate cross-functional software and product work from intake through discovery, requirements, design, implementation, assurance, release, and measurement. Use for substantial features, bugs, audits, incidents, release decisions, operating reviews, or requests requiring several disciplines. For a narrow single-discipline task, use the relevant specialist skill directly.
+description: Coordinate cross-functional software and product work from intake through discovery, requirements, design, implementation, assurance, release, and measurement. Use for substantial features, bugs, audits, incidents, release decisions, operating reviews, or requests requiring several disciplines. Also use for model-routing and model-policy requests, such as turning routing on or off, choosing a routing profile or fallback, checking usage, rolling back or uninstalling, or asking which model is used and why. For a narrow single-discipline task, use the relevant specialist skill directly.
 ---
 
 # Office OS
@@ -18,7 +18,6 @@ Office OS chooses and coordinates work. It does not duplicate specialist skills 
 - Match process depth to impact and risk. Do not apply the full lifecycle to trivial work.
 - Separate facts, assumptions, decisions, risks, blockers, and recommendations.
 - Do not perform external, destructive, production, financial, employment, contractual, access-control, or public-communication actions without the authorization required by the active environment and user request.
-- Verification is required before completion claims.
 
 ## Apply project rules before generic defaults
 
@@ -80,10 +79,8 @@ Use the full lifecycle only when justified. A two-line fix must not trigger exec
 5. **Plan** a vertical, reviewable solution with dependencies, risks, rollback, validation, and ownership.
 6. **Execute** within scope and authorization. Preserve backward compatibility unless change is intentional and approved.
 7. **Assure** business behavior, UX, data integrity, authorization, tenant isolation, failure handling, accessibility, security, privacy, performance, operations, and cost where relevant.
-8. **Verify** with actual commands, tests, inspection, or other observable evidence. Review the final diff and disclose what was not verified.
-9. **Handover** implementation work with a concise verification checklist and a QA handover when project rules or [references/workflows.md](references/workflows.md) require one.
-10. **Deliver** the result, evidence, remaining risks, ownership, and the single most useful next action.
-11. **Measure** significant released outcomes and choose keep, improve, expand, reduce, roll back, remove, or research further.
+8. **Verify, hand over and deliver** as defined in [references/evidence-delivery.md](references/evidence-delivery.md): real evidence, final diff review, a QA handover when [references/workflows.md](references/workflows.md) or project rules require one, remaining risks, and one next action.
+9. **Measure** significant released outcomes and choose keep, improve, expand, reduce, roll back, remove, or research further.
 
 ## Use real workers honestly
 
@@ -93,12 +90,11 @@ When real workers are unavailable, perform distinct role-based review passes you
 
 ## Model routing in Claude Code
 
-Office OS owns model routing as one part of its orchestration. **Before applying routing, inspect the active user rule at `${CLAUDE_CONFIG_DIR:-~/.claude}/rules/model-routing.md`: only apply this package's model routing if it says `ROUTING_STATE: ON`. If `ROUTING_STATE: OFF`, preserve all Office OS business workflows but do not use this package's model-selection/delegation preferences.** The installed policy is ON automatically by default for ordinary sessions. First choose the right workflow and domain specialists, **then** apply [references/model-routing.md](references/model-routing.md) to decide whether bounded Haiku discovery, a focused Opus investigation, or direct Sonnet execution will actually help. Do not confuse domain routing with model selection; skip delegation that adds no value.
+Choose the workflow and specialists first, then pick the model. The routing rule is already loaded in context when installed (`${CLAUDE_CONFIG_DIR:-~/.claude}/rules/model-routing.md`); do not re-read [references/model-routing.md](references/model-routing.md) unless the rule is missing. Apply it only if it says `ROUTING_STATE: ON`; if `OFF`, keep all Office OS workflows and skip model-selection preferences.
 
-- Requested models are preferences, not proof of effective execution. Use the configured main-session and subagent status lines to observe resolved model identifiers when available; mark unavailable evidence unverified.
-- Never voluntarily select Fable or another premium/long-horizon model without explicit approval for that specific task. Project and higher-priority instructions, user authorization, budget, and model availability still govern.
-- For model-routing setup, profiles, opt-in fallback, usage reports, sanitized history/export, diagnostics, verification, upgrade, rollback or removal, follow [routing-tools/OPERATIONS.md](routing-tools/OPERATIONS.md) via `/office-os routing <command>` (or invoke `$office-os` with that request). Preview every modification and obtain authorization before changes.
-- The installed user-level rule makes routing automatic for normal Claude Code tasks, whether Office OS is explicitly invoked or not. `/dynamic-routing on|off|status|profile|fallback|usage|compatibility` is a **control-only legacy slash command** pointing to this skill's installed routing manager. There is no second competing routing skill. Changes should be reflected in subsequent new Claude Code sessions; honor the user's toggle immediately in the current conversation.
+- Requested models are not proof of the effective model. Never use Fable or another premium model without explicit approval for that task.
+- For setup, profiles, fallback, usage, history, export, diagnose, rollback or uninstall, follow [routing-tools/OPERATIONS.md](routing-tools/OPERATIONS.md) via `/office-os routing <command>`. Preview every change and get authorization.
+- `/dynamic-routing` is a control-only command, not a second skill.
 
 ## Route to the right reference
 
@@ -120,4 +116,4 @@ Prepare a decision package and mark **REQUIRES AUTHORIZED APPROVAL** when the ne
 
 ## Completion rule
 
-Do not mark work complete because files changed or a document exists. Completion requires the applicable outcome and validation evidence. Use [references/evidence-delivery.md](references/evidence-delivery.md) and omit irrelevant boilerplate.
+Files changing or a document existing is not completion. Do not claim completion without verification evidence; see [references/evidence-delivery.md](references/evidence-delivery.md).

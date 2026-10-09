@@ -1,6 +1,6 @@
-# Office OS: live model-routing smoke tests
+# Office OS: live model-routing smoke tests (opt-in)
 
-# Opt-in live smoke test (requires your authenticated Claude Code session)
+These need your authenticated Claude Code session.
 
 Static validation (`verify`) checks files and settings only. It **cannot** prove that the intended runtime model executed. Run the following tasks manually (or via a user-approved paid test) after restarting Claude Code:
 
@@ -13,3 +13,7 @@ Static validation (`verify`) checks files and settings only. It **cannot** prove
 7. Confirm your pre-existing `CLAUDE.md`, custom rules, third-party agents, unrelated `settings.json` fields and status-line customizations remain intact.
 
 Mark each test PASS / FAIL / SKIPPED; record effective model evidence from the UI, not from a model's unsupported self-claim. Model availability and provider-specific aliases may vary. No test is performed automatically by installing the bundle.
+
+## Scripted variant (`scripts/live_smoke.py`)
+
+An opt-in script runs three headless calls (`claude -p ... --output-format stream-json --verbose`) so delegation `tool_use` records are visible. It reports `OBSERVED`, `PARTIAL` (delegation seen and the expected model has usage), `UNVERIFIED` (expected model has usage but no sign of delegation), `UNEXPECTED` or `INCONCLUSIVE`. Without message records it falls back to an input+output token share heuristic (cache tokens excluded). It never proves agent-to-model attribution; confirm in `/tasks` or the subagent status line. It consumes usage and needs `--run --approve-usage`.

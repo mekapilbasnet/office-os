@@ -3,12 +3,14 @@
  * validate-asset.cjs
  *
  * Validates marketing assets against brand guidelines.
- * Checks: file naming, dimensions, file size, metadata.
+ * Checks: file naming, format, file size, pixel dimensions (PNG, JPEG, GIF,
+ * WebP; SVG is vector so its size is reported but not enforced; video
+ * dimensions are not read), and registration in .assets/manifest.json.
+ * It only reports problems and suggests a filename; it never renames or edits files.
  *
  * Usage:
  *   node validate-asset.cjs <asset-path>
  *   node validate-asset.cjs <asset-path> --json
- *   node validate-asset.cjs <asset-path> --fix
  *
  * For color validation of images, use with extract-colors.cjs
  */
@@ -182,6 +184,121 @@ function validateFormat(extension) {
 }
 
 /**
+ * Read pixel dimensions from an image file header (no dependencies).
+ * Returns { width, height } or null if the format is unsupported/unreadable.
+ */
+function readImageDimensions(filepath, extension) {
+  let buf;
+  try {
+    buf = fs.readFileSync(filepath);
+  } catch {
+    return null;
+  }
+
+  if (extension === "png") {
+    // 8-byte signature, then IHDR: width @16, height @20 (big-endian)
+    if (buf.length >= 24 && buf.toString("ascii", 12, 16) === "IHDR") {
+      return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+    }
+    return null;
+  }
+
+  if (extension === "gif") {
+    if (buf.length >= 10 && buf.toString("ascii", 0, 3) === "GIF") {
+      return { width: buf.readUInt16LE(6), height: buf.readUInt16LE(8) };
+    }
+    return null;
+  }
+
+  if (extension === "jpg" || extension === "jpeg") {
+    if (buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return null;
+    let pos = 2;
+    while (pos + 9 < buf.length) {
+      if (buf[pos] !== 0xff) { pos++; continue; }
+      const marker = buf[pos + 1];
+      if (marker === 0xff) { pos++; continue; }
+      // Standalone markers carry no length
+      if (marker === 0xd8 || (marker >= 0xd0 && marker <= 0xd7) || marker === 0x01) { pos += 2; continue; }
+      const len = buf.readUInt16BE(pos + 2);
+      // SOF0..SOF15 except DHT(C4), JPG(C8), DAC(CC)
+      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+        return { height: buf.readUInt16BE(pos + 5), width: buf.readUInt16BE(pos + 7) };
+      }
+      pos += 2 + len;
+    }
+    return null;
+  }
+
+  if (extension === "webp") {
+    if (buf.length < 30 || buf.toString("ascii", 0, 4) !== "RIFF" || buf.toString("ascii", 8, 12) !== "WEBP") return null;
+    const fourcc = buf.toString("ascii", 12, 16);
+    if (fourcc === "VP8X") {
+      return { width: 1 + buf.readUIntLE(24, 3), height: 1 + buf.readUIntLE(27, 3) };
+    }
+    if (fourcc === "VP8L") {
+      const bits = buf.readUInt32LE(21);
+      return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+    }
+    if (fourcc === "VP8 ") {
+      return { width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff };
+    }
+    return null;
+  }
+
+  if (extension === "svg") {
+    const text = buf.toString("utf-8", 0, Math.min(buf.length, 4096));
+    const tag = text.match(/<svg\b[^>]*>/i);
+    if (!tag) return null;
+    const num = (name) => {
+      const m = tag[0].match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*["']\\s*([0-9.]+)(?:px)?\\s*["']`, "i"));
+      return m ? parseFloat(m[1]) : null;
+    };
+    let width = num("width");
+    let height = num("height");
+    if (width == null || height == null) {
+      const vb = tag[0].match(/viewBox\s*=\s*["']\s*[-0-9.]+[\s,]+[-0-9.]+[\s,]+([0-9.]+)[\s,]+([0-9.]+)\s*["']/i);
+      if (vb) { width = parseFloat(vb[1]); height = parseFloat(vb[2]); }
+    }
+    return width != null && height != null ? { width, height } : null;
+  }
+
+  return null;
+}
+
+/**
+ * Validate pixel dimensions against RULES.dimensions for the asset type
+ * (the first "_" part of the filename; unknown types use "default").
+ */
+function validateDimensions(filepath, extension, assetType) {
+  const issues = [];
+  const warnings = [];
+  const isVideo = RULES.formats.video.includes(extension);
+  const isDocument = RULES.formats.document.includes(extension);
+  if (isVideo || isDocument) {
+    return { checked: false, valid: true, issues, warnings, reason: "dimensions are not read for this format" };
+  }
+
+  const dims = readImageDimensions(filepath, extension);
+  if (!dims) {
+    warnings.push("Could not read image dimensions");
+    return { checked: false, valid: true, issues, warnings };
+  }
+
+  // SVG is resolution independent: report only.
+  if (extension === "svg") {
+    return { checked: true, valid: true, issues, warnings, ...dims, enforced: false };
+  }
+
+  const rule = RULES.dimensions[assetType] || RULES.dimensions.default;
+  if (dims.width < rule.minWidth || dims.height < rule.minHeight) {
+    issues.push(
+      `Dimensions ${dims.width}x${dims.height} are below the minimum ${rule.minWidth}x${rule.minHeight} for "${RULES.dimensions[assetType] ? assetType : "default"}" assets`
+    );
+  }
+  return { checked: true, valid: issues.length === 0, issues, warnings, ...dims, rule };
+}
+
+/**
  * Check if asset exists in manifest
  */
 function checkManifest(filepath) {
@@ -281,7 +398,14 @@ function validateAsset(assetPath) {
   }
   results.warnings.push(...sizeResult.warnings);
 
-  // 4. Check manifest registration
+  // 4. Validate pixel dimensions
+  const assetType = (filenameResult.parsed && filenameResult.parsed.type) || filename.split("_")[0];
+  const dimResult = validateDimensions(assetPath, extension, assetType);
+  results.checks.dimensions = dimResult;
+  results.issues.push(...dimResult.issues);
+  results.warnings.push(...dimResult.warnings);
+
+  // 5. Check manifest registration
   const manifestResult = checkManifest(assetPath);
   results.checks.manifest = manifestResult;
   if (!manifestResult.registered) {
@@ -291,7 +415,7 @@ function validateAsset(assetPath) {
     );
   }
 
-  // 5. Suggest corrected filename if needed
+  // 6. Suggest corrected filename if needed
   if (!filenameResult.valid && filenameResult.parsed) {
     const suggested = suggestFilename(filename, filenameResult.parsed);
     if (suggested) {
@@ -340,6 +464,11 @@ function formatOutput(results) {
     lines.push(`\nFile Size: ${formatBytes(results.checks.fileSize.size)}`);
   }
 
+  if (results.checks.dimensions?.width) {
+    const d = results.checks.dimensions;
+    lines.push(`Dimensions: ${d.width}x${d.height}px`);
+  }
+
   lines.push("\n" + "=".repeat(60));
 
   return lines.join("\n");
@@ -384,4 +513,8 @@ function main() {
   process.exit(results.valid ? 0 : 1);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = { validateAsset, validateFilename, readImageDimensions, validateDimensions };

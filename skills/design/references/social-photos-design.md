@@ -1,6 +1,6 @@
 # Social Photos Design Guide
 
-Design social media images via HTML/CSS rendering + screenshot export. Orchestrates `ui-ux-pro-max`, `brand`, `design-system`, and `chrome-devtools` skills.
+Design social media images via HTML/CSS rendering + screenshot export. Uses the `ui-ux-pro-max` and `brand` skills for design decisions and headless Chrome / Playwright for export.
 
 ## Platform Sizes
 
@@ -22,9 +22,9 @@ Design social media images via HTML/CSS rendering + screenshot export. Orchestra
 
 ## Workflow
 
-### Step 1: Activate Project Management
+### Step 1: Plan the Work
 
-Invoke `project-management` skill to create persistent TODO tasks via Claude's native task orchestration. Break down into:
+Write a short checklist (Claude's built-in task list works well) and break the work down into:
 - Requirement analysis task
 - Idea generation task(s)
 - HTML design task(s) — can parallelize per size/variant
@@ -55,11 +55,11 @@ Present ideas to user via `AskUserQuestion` for approval before designing.
 
 ### Step 4: Design HTML Files
 
-Activate these skills in sequence:
+Use these in order:
 
-1. **`/ckm:brand`** — Extract brand colors, fonts, voice from user's project
-2. **`/ckm:design-system`** — Get design tokens (spacing, typography scale, color palette)
-3. **Randomly invoke ONE of:** `/ck:ui-ux-pro-max` OR `/ck:frontend-design` — for layout, hierarchy, visual balance. Pick one at random each run for design variety.
+1. **`brand` skill** — Extract brand colors, fonts, voice from the user's project (`node ~/.claude/skills/brand/scripts/inject-brand-context.cjs`)
+2. **`ui-ux-pro-max` skill** — Get a color palette, type pairing and spacing scale: `python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<brand + mood keywords>" --design-system`
+3. **Layout** — Apply the layout and hierarchy rules in this guide; use the `frontend-design` skill as well if it is installed.
 
 For each approved idea + each target size, create an HTML file:
 
@@ -106,7 +106,7 @@ output/social-photos/
       position: relative;
       /* Background: gradient, solid, or image */
     }
-    /* Design tokens from brand/design-system */
+    /* Design tokens from brand guidelines */
   </style>
 </head>
 <body>
@@ -119,7 +119,7 @@ output/social-photos/
 
 ### Step 5: Screenshot Export
 
-Use Chrome headless, `chrome-devtools` skill, or Playwright/Puppeteer to capture exact-size screenshots.
+Use headless Chrome or Playwright/Puppeteer to capture exact-size screenshots.
 
 **IMPORTANT:** Always add a delay (3-5s) after page load for fonts/images to fully render before capture.
 
@@ -145,16 +145,7 @@ Key flags:
 - `--hide-scrollbars` — prevents scrollbar artifacts in screenshots
 - `--window-size=WxH` — sets exact pixel dimensions
 
-#### Option B: chrome-devtools skill
-
-Invoke `/chrome-devtools` with instructions to:
-1. Open each HTML file in browser
-2. Set viewport to exact target dimensions
-3. Wait 3-5s for fonts/images to fully load
-4. Screenshot full page to PNG
-5. Save to `output/social-photos/exports/`
-
-#### Option C: Playwright script
+#### Option B: Playwright script
 
 ```javascript
 const { chromium } = require('playwright');
@@ -180,7 +171,7 @@ async function captureScreenshots(htmlFiles) {
 }
 ```
 
-#### Option D: Puppeteer script
+#### Option C: Puppeteer script
 
 ```javascript
 const puppeteer = require('puppeteer');
@@ -210,7 +201,7 @@ async function captureScreenshots(htmlFiles) {
 
 ### Step 6: Verify & Fix Designs
 
-Use Chrome MCP or `chrome-devtools` skill to visually inspect each exported PNG:
+Open each exported PNG (or use a browser tool if one is available) to visually inspect it:
 
 1. Open exported screenshots and check for layout/styling issues
 2. Verify: fonts rendered correctly, colors match brand, text readable at thumbnail size
@@ -227,7 +218,7 @@ Use Chrome MCP or `chrome-devtools` skill to visually inspect each exported PNG:
 
 ### Step 7: Generate Summary Report
 
-Save report to `plans/reports/` with naming pattern from session hooks.
+Save the report next to the exports (or in the project's reports/docs folder).
 
 Report structure:
 
@@ -269,9 +260,9 @@ Report structure:
 
 ### Step 8: Organize Output
 
-Invoke `assets-organizing` skill to organize all output files and reports:
+Organize all output files and reports:
 - Move/copy exported PNGs to proper asset directories
-- Ensure reports are in `plans/reports/` with correct naming
+- Keep any written summary next to the exports (or in the project's reports/docs folder)
 - Clean up intermediate HTML files if requested
 - Tag outputs with metadata (platform, size, concept name)
 
@@ -326,4 +317,4 @@ This sub-skill handles social media image design only. Does NOT handle:
 - Animation/motion graphics
 - Print production files (CMYK, bleed)
 - Direct social media posting/scheduling
-- AI image generation (use `ai-artist` skill for that)
+- AI image generation (use an image-generation tool separately)

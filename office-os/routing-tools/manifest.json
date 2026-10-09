@@ -1,9 +1,6 @@
 {
   "name": "office-os-integrated-dynamic-routing",
   "version": "1.0.0-office",
-  "entrypoint": "START_HERE.md",
-  "scope": "user",
-  "skill": "office-os",
   "default_main_model": "sonnet",
   "agents": {
     "Explore": "haiku",
@@ -32,7 +29,6 @@
     "skills/office-os/references/routing.md": "d5bc55f210f3e9c77c499ade7a32a12f469552797f186a99f03073ea01438600",
     "skills/office-os/references/command-surface.md": "7e40175c324e47d8e58e3970ef52151b8f6fc2661ce5aaca03ac0f2c071efeca"
   },
-  "notes": "Office OS main skill, auto-enabled rule, /dynamic-routing command-only on/off/status, model observability and safe rollback.",
   "owned_office_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -60,8 +56,7 @@
     "routing-tools/skills_check.py",
     "routing-tools/usage_report.py"
   ],
-  "minimum_recommended_claude_code": "2.1.257",
-  "fallback_default": "preserve-existing",
+  "minimum_recommended_claude_code": "2.1.271",
   "removed_skills": [
     "banner-design",
     "slides",

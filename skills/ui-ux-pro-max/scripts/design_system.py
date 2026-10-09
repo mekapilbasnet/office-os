@@ -16,12 +16,14 @@ Usage:
 """
 
 import csv
+import hashlib
 import json
 import os
 import re
 import sys
 import io
 import tempfile
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from core import search, DATA_DIR
@@ -961,12 +963,26 @@ def generate_design_system(query: str, project_name: str = None, output_format: 
 def safe_slug(name, fallback: str = "default") -> str:
     """Slugify a name into a single safe path segment.
 
-    Only [a-z0-9_-] survives; every other character (including '/', '\\' and
-    '.') collapses into '-'. This makes path traversal via project/page names
-    (e.g. "../../etc") impossible — the slug can never leave its parent dir.
+    Unicode letters, digits and combining marks (e.g. Devanagari vowel signs)
+    are kept, lower-cased and NFKC-normalised; everything else (including
+    '/', '\\' and '.') collapses into '-'. This makes path traversal via
+    project/page names (e.g. "../../etc") impossible -- the slug can never
+    leave its parent dir. If nothing survives (symbols only), a short hash of
+    the original name keeps different names from colliding on one slug.
     """
-    slug = re.sub(r'[^a-z0-9_-]+', '-', str(name).lower()).strip('-')
-    return slug or fallback
+    text = unicodedata.normalize("NFKC", str(name if name is not None else "")).lower()
+    chars = []
+    for ch in text:
+        if ch in "-_" or unicodedata.category(ch)[0] in ("L", "N", "M"):
+            chars.append(ch)
+        else:
+            chars.append("-")
+    slug = re.sub(r'-{2,}', '-', "".join(chars)).strip('-')
+    if slug:
+        return slug
+    if text.strip():
+        return f"{fallback}-{hashlib.sha1(text.encode('utf-8')).hexdigest()[:8]}"
+    return fallback
 
 
 def _write_persisted_file(path: Path, content: str, force: bool) -> None:
@@ -986,7 +1002,17 @@ def _write_persisted_file(path: Path, content: str, force: bool) -> None:
         else:
             # A same-filesystem hard link atomically publishes only if the
             # destination is absent. Losing writers get FileExistsError.
-            os.link(temp_name, path)
+            try:
+                os.link(temp_name, path)
+            except FileExistsError:
+                raise
+            except OSError:
+                # Filesystem without hard links (FAT/exFAT, some network
+                # mounts): fall back to exclusive creation, which still
+                # refuses to overwrite an existing destination.
+                fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
+                with os.fdopen(fd, 'w', encoding='utf-8') as out:
+                    out.write(content)
     finally:
         if temp_name and os.path.exists(temp_name):
             os.unlink(temp_name)

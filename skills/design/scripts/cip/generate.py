@@ -23,7 +23,9 @@ from datetime import datetime
 
 # Add parent directory for imports
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # _common.py
 from core import search, get_cip_brief
+from _common import load_env
 
 # Model options
 MODELS = {
@@ -65,24 +67,7 @@ def load_logo_image(logo_path):
         print(f"Error loading logo: {e}")
         return None
 
-# Load environment variables
-def load_env():
-    """Load environment variables from .env files"""
-    env_paths = [
-        Path(__file__).parent.parent.parent / ".env",
-        Path.home() / ".claude" / "skills" / ".env",
-        Path.home() / ".claude" / ".env"
-    ]
-    for env_path in env_paths:
-        if env_path.exists():
-            with open(env_path) as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        key, value = line.split("=", 1)
-                        if key not in os.environ:
-                            os.environ[key] = value.strip('"\'')
-
+# Only loads GEMINI_API_KEY, GOOGLE_API_KEY, ATLASCLOUD_API_KEY, MUAPI_API_KEY
 load_env()
 
 
@@ -283,7 +268,7 @@ def generate_with_nano_banana(prompt_data, output_dir=None, model_key="flash", a
         return None
 
 
-def generate_cip_set(brand_name, industry, style=None, deliverables=None, output_dir=None, model_key="flash", logo_path=None, aspect_ratio="1:1"):
+def generate_cip_set(brand_name, industry, style=None, deliverables=None, output_dir=None, model_key="flash", logo_path=None, aspect_ratio="1:1", mockup=None, logo_image=None):
     """Generate a complete CIP set for a brand
 
     Args:
@@ -295,11 +280,12 @@ def generate_cip_set(brand_name, industry, style=None, deliverables=None, output
         model_key: 'flash' (fast) or 'pro' (quality)
         logo_path: Path to brand logo image for image editing mode
         aspect_ratio: Output aspect ratio
+        mockup: Optional mockup context applied to every deliverable
+        logo_image: Already-loaded PIL image (avoids loading logo_path twice)
     """
 
-    # Load logo image if provided
-    logo_image = None
-    if logo_path:
+    # Load logo image if provided (and not already loaded by the caller)
+    if logo_image is None and logo_path:
         logo_image = load_logo_image(logo_path)
         if not logo_image:
             print("Warning: Could not load logo, falling back to text-to-image mode")
@@ -318,6 +304,7 @@ def generate_cip_set(brand_name, industry, style=None, deliverables=None, output
             brand_name=brand_name,
             style=brief.get("style", {}).get("Style Name"),
             industry=industry,
+            mockup=mockup,
             use_logo_image=(logo_image is not None)
         )
 
@@ -439,7 +426,7 @@ Image Editing Mode:
 
     if args.set or args.deliverables:
         # Generate multiple deliverables
-        deliverables = args.deliverables.split(",") if args.deliverables else None
+        deliverables = [d.strip() for d in args.deliverables.split(",") if d.strip()] if args.deliverables else None
 
         if args.prompt_only:
             results = []
@@ -455,12 +442,16 @@ Image Editing Mode:
         else:
             results = generate_cip_set(
                 args.brand, args.industry, args.style, deliverables, args.output,
-                model_key=args.model, logo_path=args.logo, aspect_ratio=args.ratio
+                model_key=args.model, aspect_ratio=args.ratio,
+                mockup=args.mockup, logo_image=logo_image
             )
             if args.json:
                 print(json.dumps(results, indent=2))
             else:
                 print(f"\n✅ Generated {len(results)} CIP mockups")
+            expected = len(deliverables) if deliverables else 5
+            if len(results) < expected:
+                sys.exit(1)
     else:
         # Generate single deliverable
         deliverable = args.deliverable or "business card"
@@ -478,6 +469,8 @@ Image Editing Mode:
             )
             if args.json:
                 print(json.dumps({"filepath": filepath, **prompt_data}, indent=2))
+            if not filepath:
+                sys.exit(1)
 
 
 if __name__ == "__main__":

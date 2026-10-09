@@ -62,15 +62,10 @@
 - "Join [notable company] and [notable company]"
 - "As seen in [publication]"
 
-## Search Commands
+## Choosing a Formula
 
-```bash
-# Find formula for slide type
-python .claude/skills/design-system/scripts/search-slides.py "problem agitation" -d copy
-
-# Get emotion-appropriate formula
-python .claude/skills/design-system/scripts/search-slides.py "urgency cta" -d copy
-```
+Use the "Quick Reference" table at the end of this file: match the slide's job
+(urgency, trust, value, action, story, data) to a formula.
 
 ## Quick Reference
 

@@ -17,27 +17,28 @@
 office-os/                  # the package that gets installed as one skill
 ├── SKILL.md                # skill entry point
 ├── agents/openai.yaml      # skill metadata (OpenAI-style interface file)
-├── references/             # workflows, governance, routing guide, templates
+├── references/             # workflows, governance, routing guide, templates,
+│                           # and model-routing.md (the always-on rule source)
 └── routing-tools/
     ├── routing_manager.py  # installer and routing controls
+    ├── skills_check.py     # advisory check of which optional skills are installed
+    ├── usage_report.py     # usage and cost summary (the usage command)
     ├── manifest.json       # list of files the package owns
     ├── subagents/          # Explore, deep-reasoner, reviewer
     ├── commands/           # /dynamic-routing
-    └── scripts/            # status lines, live smoke test
+    ├── scripts/            # status lines, live smoke test
+    ├── OPERATIONS.md       # how an assistant runs the manager
+    ├── SMOKE_TESTS.md      # opt-in live test steps
+    └── RELEASE_CHECKLIST.md
 skills/                     # separate vendored design skills (not installed)
 tests/                      # offline regression tests
 docs/                       # reference docs
 install.* / verify.*        # thin wrappers around routing_manager.py
 ```
 
-## What an install writes (under `~/.claude`)
+## What an install writes
 
-- `skills/office-os/`: the skill and its routing tools
-- `rules/model-routing.md`: the routing rule (swapped for an OFF rule when disabled)
-- `agents/`: the three subagents
-- `commands/dynamic-routing.md`: the control command
-- Status line settings, only if you have none
-- A backup folder and install state, so changes can be rolled back
+See [INSTALLATION.md](INSTALLATION.md#what-the-installer-writes-under-claude). Commands are listed in [COMMANDS.md](COMMANDS.md).
 
 ## Design intent
 

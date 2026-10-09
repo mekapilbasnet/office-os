@@ -96,7 +96,7 @@ Resolve material findings or report them as blockers/risks.
 
 ## Final report
 
-Lead with the outcome. Keep the response short enough for the intended reader, use plain language, and include only applicable sections:
+Follow the communication rules in `SKILL.md` (outcome first, plain language, short). Include only applicable sections:
 
 1. **Outcome:** delivered result.
 2. **Decision:** why the work proceeded, changed, stopped, or was postponed.

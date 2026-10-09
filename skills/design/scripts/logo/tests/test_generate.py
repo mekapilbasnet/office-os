@@ -284,5 +284,103 @@ class MuapiGenerationTests(unittest.TestCase):
         json_request.assert_called_once()
 
 
+class MuapiHostPinningTests(unittest.TestCase):
+    @patch.object(logo_generate, "_json_request")
+    def test_result_url_on_another_host_is_refused_before_polling(self, json_request):
+        json_request.return_value = {
+            "request_id": "req-1",
+            "status": "created",
+            "output": {"urls": {"get": "https://evil.example.com/steal"}},
+        }
+
+        with self.assertRaisesRegex(RuntimeError, "must be on api.muapi.ai"):
+            logo_generate._generate_with_muapi(
+                "logo prompt", "logo.png", "1:1", "muapi-key", "nano-banana"
+            )
+
+        json_request.assert_called_once()  # only the POST; the key never went to evil.example.com
+
+    def test_api_key_is_never_sent_to_a_non_provider_host(self):
+        with self.assertRaisesRegex(ValueError, "non-provider host"):
+            logo_generate._json_request("https://evil.example.com/x", "secret")
+
+    def test_redirect_to_another_host_drops_auth_headers(self):
+        handler = logo_generate._SafeRedirectHandler()
+        request = logo_generate.Request(
+            "https://api.muapi.ai/api/v1/results/1",
+            headers={"x-api-key": "secret", "Authorization": "Bearer secret", "Accept": "application/json"},
+        )
+        new = handler.redirect_request(
+            request, None, 302, "Found", {}, "https://media.example.com/logo.png"
+        )
+        headers = {k.lower() for k in new.headers} | {k.lower() for k in new.unredirected_hdrs}
+        self.assertNotIn("x-api-key", headers)
+        self.assertNotIn("authorization", headers)
+        self.assertIn("accept", headers)
+
+    def test_redirect_on_same_host_keeps_auth_headers(self):
+        handler = logo_generate._SafeRedirectHandler()
+        request = logo_generate.Request(
+            "https://api.muapi.ai/api/v1/results/1", headers={"x-api-key": "secret"}
+        )
+        new = handler.redirect_request(
+            request, None, 302, "Found", {}, "https://api.muapi.ai/api/v1/results/2"
+        )
+        self.assertIn("x-api-key", {k.lower() for k in new.headers})
+
+
+class BatchWithoutBrandTests(unittest.TestCase):
+    def test_lettermark_uses_first_letter_of_brand(self):
+        styles = dict(logo_generate.build_batch_styles("Zenith Labs"))
+        self.assertIn("'Z'", styles["lettermark"])
+        self.assertNotIn("'U'", styles["lettermark"])
+
+    def test_lettermark_without_brand_is_generic(self):
+        styles = dict(logo_generate.build_batch_styles(None))
+        self.assertNotIn("'U'", styles["lettermark"])
+        self.assertIn("initial", styles["lettermark"])
+
+    def test_slug_handles_missing_and_unsafe_names(self):
+        self.assertEqual("logo", logo_generate._slug(None))
+        self.assertEqual("my_brand", logo_generate._slug("My Brand"))
+        self.assertNotIn("/", logo_generate._slug("../etc/passwd"))
+
+    @patch.object(logo_generate, "generate_batch", return_value=["a.png"] * 9)
+    def test_batch_with_prompt_only_does_not_crash(self, generate_batch):
+        with patch.object(
+            logo_generate.sys, "argv", ["generate.py", "--batch", "3", "--prompt", "coffee shop"]
+        ):
+            logo_generate.main()
+
+        kwargs = generate_batch.call_args.kwargs
+        self.assertIsNone(kwargs["brand_name"])
+        self.assertEqual("./logo_logos", kwargs["output_dir"])
+        self.assertIsNone(kwargs["industry"])  # no forced "tech"
+
+    @patch.object(logo_generate, "generate_batch", return_value=[])
+    def test_failed_batch_exits_non_zero(self, generate_batch):
+        with patch.object(logo_generate.sys, "argv", ["generate.py", "--batch", "2", "--brand", "Acme"]):
+            with self.assertRaises(SystemExit) as ctx:
+                logo_generate.main()
+        self.assertEqual(1, ctx.exception.code)
+
+    @patch.object(logo_generate, "generate_logo", return_value=None)
+    def test_failed_single_logo_exits_non_zero(self, generate_logo):
+        with patch.object(logo_generate.sys, "argv", ["generate.py", "--brand", "Acme"]):
+            with self.assertRaises(SystemExit) as ctx:
+                logo_generate.main()
+        self.assertEqual(1, ctx.exception.code)
+
+    @patch.object(logo_generate, "generate_logo", return_value="x.png")
+    @patch.object(logo_generate.time, "sleep")
+    def test_batch_passes_industry_through(self, sleep, generate_logo):
+        with tempfile.TemporaryDirectory() as tmp:
+            logo_generate.generate_batch(
+                prompt="p", brand_name=None, count=1, output_dir=tmp, industry="finance"
+            )
+        self.assertEqual("finance", generate_logo.call_args.kwargs["industry"])
+        self.assertIsNone(generate_logo.call_args.kwargs["brand_name"])
+
+
 if __name__ == "__main__":
     unittest.main()

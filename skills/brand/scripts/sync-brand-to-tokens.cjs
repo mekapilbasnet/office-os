@@ -4,6 +4,12 @@
  *
  * Syncs brand-guidelines.md colors → design-tokens.json → design-tokens.css
  *
+ * Paths are relative to the current working directory (your project root):
+ *   reads   docs/brand-guidelines.md
+ *   writes  assets/design-tokens.json  (starts from templates/design-tokens-starter.json
+ *                                       when the project has no tokens file yet)
+ *   writes  assets/design-tokens.css   (CSS custom properties generated here)
+ *
  * Usage:
  *   node sync-brand-to-tokens.cjs
  *   node sync-brand-to-tokens.cjs --dry-run
@@ -11,13 +17,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 
 // Paths
 const BRAND_GUIDELINES = 'docs/brand-guidelines.md';
 const DESIGN_TOKENS_JSON = 'assets/design-tokens.json';
 const DESIGN_TOKENS_CSS = 'assets/design-tokens.css';
-const GENERATE_TOKENS_SCRIPT = '.claude/skills/design-system/scripts/generate-tokens.cjs';
+const STARTER_TOKENS = path.join(__dirname, '..', 'templates', 'design-tokens-starter.json');
 
 /**
  * Extract color info from brand guidelines markdown
@@ -110,21 +115,16 @@ function adjustBrightness(hex, percent) {
 /**
  * Update design tokens JSON
  */
-function updateDesignTokens(tokens, colors) {
-  // Update brand name
-  const brandName = `ClaudeKit Marketing - ${colors.primary.name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`;
-  tokens.brand = brandName;
+function updateDesignTokens(tokens, colors, brandName) {
+  // Brand name comes from the guideline's title; if it has none, keep
+  // whatever the tokens file already says.
+  if (brandName) tokens.brand = brandName;
 
   // Update primitive colors with new names
   tokens.primitive = tokens.primitive || {};
   const primitiveColors = tokens.primitive.color || {};
 
-  // Remove old color keys, add new ones
-  delete primitiveColors.coral;
-  delete primitiveColors.purple;
-  delete primitiveColors.mint;
-
-  // Add new named colors. Skip any role with no base hex rather than crashing
+  // Add (or replace) the primary / secondary / accent scales. Skip any role with no base hex rather than crashing
   // on an unexpected guidelines format.
   for (const role of ['primary', 'secondary', 'accent']) {
     const c = colors[role];
@@ -163,11 +163,16 @@ function updateDesignTokens(tokens, colors) {
     sem['accent-hover'] = { "$value": `{primitive.color.${a}.600}`, "$type": "color" };
     sem['accent-light'] = { "$value": `{primitive.color.${a}.300}`, "$type": "color" };
 
-    // Status colors (use accent for success, primary for error/info)
-    sem.success = { "$value": `{primitive.color.${a}.500}`, "$type": "color" };
-    sem['success-light'] = { "$value": `{primitive.color.${a}.300}`, "$type": "color" };
-    sem.error = { "$value": `{primitive.color.${p}.500}`, "$type": "color" };
-    sem['error-light'] = { "$value": `{primitive.color.${p}.300}`, "$type": "color" };
+    // Status colors: success/error keep their conventional green/red so a
+    // non-red primary never makes errors look like brand actions.
+    const prim = tokens.primitive?.color || {};
+    const status = (hue, fallbackName, shade, literal) =>
+      prim[hue]?.[shade] ? `{primitive.color.${hue}.${shade}}`
+        : (fallbackName && prim[fallbackName]?.[shade]) ? `{primitive.color.${fallbackName}.${shade}}` : literal;
+    sem.success = { "$value": status('green', a, 500, '#16A34A'), "$type": "color" };
+    sem['success-light'] = { "$value": status('green', a, 300, '#86EFAC'), "$type": "color" };
+    sem.error = { "$value": status('red', null, 500, '#DC2626'), "$type": "color" };
+    sem['error-light'] = { "$value": status('red', null, 300, '#FCA5A5'), "$type": "color" };
     sem.info = { "$value": `{primitive.color.${s}.500}`, "$type": "color" };
     sem['info-light'] = { "$value": `{primitive.color.${s}.300}`, "$type": "color" };
   }
@@ -182,6 +187,87 @@ function updateDesignTokens(tokens, colors) {
   }
 
   return tokens;
+}
+
+/**
+ * Brand name from the guideline title, e.g. "# Acme Brand Guidelines v1.0"
+ * → "Acme". Returns null for generic titles such as "# Brand Guidelines v1.0".
+ */
+function extractBrandName(content) {
+  const m = content.match(/^#\s+(.+?)\s*$/m);
+  if (!m) return null;
+  // Strip generic words first, then only a trailing version (v1.2, 1.0, v2) so
+  // names that merely contain digits ("V8 Motors", "Studio 54") survive.
+  const name = m[1]
+    .replace(/brand\s+(guidelines?|guide|book|identity)|style\s+guide|guidelines?/gi, '')
+    .replace(/[\s:\-–—|]+(?:v\d+(?:\.\d+)*|\d+(?:\.\d+)+)\s*$/i, '')
+    .replace(/^[\s:\-–—|]+|[\s:\-–—|]+$/g, '')
+    .trim();
+  return name || null;
+}
+
+/**
+ * Turn a token path into a CSS custom property name.
+ *   primitive.color.primary.500 → --primitive-color-primary-500
+ *   semantic.color.primary      → --color-primary
+ *   component.button.bg         → --button-bg
+ */
+function cssVarName(pathParts) {
+  const parts = pathParts[0] === 'primitive' ? pathParts : pathParts.slice(1);
+  return '--' + parts.map(p => String(p).replace(/[^A-Za-z0-9_-]/g, '-')).join('-');
+}
+
+function resolveCssValue(value) {
+  // "{primitive.color.primary.500}" → "var(--primitive-color-primary-500)"
+  return String(value).replace(/\{([^{}]+)\}/g, (_, ref) => `var(${cssVarName(ref.split('.'))})`);
+}
+
+function collectTokens(node, pathParts, out) {
+  if (node && typeof node === 'object' && Object.prototype.hasOwnProperty.call(node, '$value')) {
+    out.push([pathParts, node['$value']]);
+    return;
+  }
+  if (node && typeof node === 'object') {
+    for (const [key, child] of Object.entries(node)) {
+      if (key.startsWith('$')) continue;
+      collectTokens(child, [...pathParts, key], out);
+    }
+  }
+}
+
+/**
+ * Generate design-tokens.css (CSS custom properties) from the tokens JSON.
+ * Tiers: primitive / semantic / component → :root; "dark" → .dark and
+ * [data-theme="dark"] overrides.
+ */
+function generateCss(tokens) {
+  const lines = ['/* Generated by brand/scripts/sync-brand-to-tokens.cjs - do not edit by hand */', ':root {'];
+  for (const tier of ['primitive', 'semantic', 'component']) {
+    if (!tokens[tier]) continue;
+    const entries = [];
+    collectTokens(tokens[tier], [tier], entries);
+    if (!entries.length) continue;
+    lines.push(`  /* ${tier} */`);
+    for (const [parts, value] of entries) {
+      lines.push(`  ${cssVarName(parts)}: ${resolveCssValue(value)};`);
+    }
+  }
+  lines.push('}');
+
+  if (tokens.dark) {
+    const entries = [];
+    for (const tier of ['semantic', 'component']) {
+      if (tokens.dark[tier]) collectTokens(tokens.dark[tier], [tier], entries);
+    }
+    if (entries.length) {
+      lines.push('', '.dark,', '[data-theme="dark"] {');
+      for (const [parts, value] of entries) {
+        lines.push(`  ${cssVarName(parts)}: ${resolveCssValue(value)};`);
+      }
+      lines.push('}');
+    }
+  }
+  return lines.join('\n') + '\n';
 }
 
 /**
@@ -207,15 +293,19 @@ function main() {
   console.log(`   Secondary: ${colors.secondary.name} (${colors.secondary.base})`);
   console.log(`   Accent: ${colors.accent.name} (${colors.accent.base})\n`);
 
-  // Read existing tokens
+  // Read existing tokens (or start from the bundled starter template)
   const tokensPath = path.resolve(process.cwd(), DESIGN_TOKENS_JSON);
+  const cssPath = path.resolve(process.cwd(), DESIGN_TOKENS_CSS);
   let tokens = {};
   if (fs.existsSync(tokensPath)) {
     tokens = JSON.parse(fs.readFileSync(tokensPath, 'utf-8'));
+  } else if (fs.existsSync(STARTER_TOKENS)) {
+    tokens = JSON.parse(fs.readFileSync(STARTER_TOKENS, 'utf-8'));
+    console.log(`ℹ️  ${DESIGN_TOKENS_JSON} not found - starting from the bundled starter tokens\n`);
   }
 
   // Update tokens
-  tokens = updateDesignTokens(tokens, colors);
+  tokens = updateDesignTokens(tokens, colors, extractBrandName(guidelinesContent));
 
   if (dryRun) {
     console.log('📋 Would update design-tokens.json:');
@@ -224,25 +314,21 @@ function main() {
     return;
   }
 
-  // Write updated tokens
-  fs.writeFileSync(tokensPath, JSON.stringify(tokens, null, 2));
+  // Write updated tokens (create assets/ if the project does not have it yet)
+  fs.mkdirSync(path.dirname(tokensPath), { recursive: true });
+  fs.writeFileSync(tokensPath, JSON.stringify(tokens, null, 2) + '\n');
   console.log(`✅ Updated: ${DESIGN_TOKENS_JSON}`);
 
-  // Regenerate CSS
-  const generateScript = path.resolve(process.cwd(), GENERATE_TOKENS_SCRIPT);
-  if (fs.existsSync(generateScript)) {
-    try {
-      execFileSync('node', [generateScript, '--config', DESIGN_TOKENS_JSON, '-o', DESIGN_TOKENS_CSS], {
-        cwd: process.cwd(),
-        stdio: 'inherit'
-      });
-      console.log(`✅ Regenerated: ${DESIGN_TOKENS_CSS}`);
-    } catch (e) {
-      console.error('⚠️  Failed to regenerate CSS:', e.message);
-    }
-  }
+  // Generate CSS custom properties directly from the tokens
+  fs.mkdirSync(path.dirname(cssPath), { recursive: true });
+  fs.writeFileSync(cssPath, generateCss(tokens));
+  console.log(`✅ Generated: ${DESIGN_TOKENS_CSS}`);
 
   console.log('\n✨ Brand sync complete!');
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = { extractColorsFromMarkdown, extractBrandName, generateCss, cssVarName, updateDesignTokens };

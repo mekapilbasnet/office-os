@@ -109,28 +109,23 @@
 | `contrast-pair` | Before/after |
 | `logo-grayscale` | Client logos |
 
-## Search Commands
+## Choosing a Layout
 
-```bash
-# Find layout for specific use
-python .claude/skills/design-system/scripts/search-slides.py "metrics dashboard" -d layout
-
-# Contextual recommendation
-python .claude/skills/design-system/scripts/search-slides.py "traction slide" \
-  --context --position 4 --total 10
-```
+Match the slide's goal to a pattern in the tables above (for example metrics
+dashboard -> `grid-metrics`; traction slide -> a chart layout with one headline
+number).
 
 ## Layout Decision Flow
 
 ```
 1. What's the slide goal?
-   └─> Search layout-logic.csv
+   └─> Pick a layout pattern from the tables above
 
 2. What emotion should it trigger?
-   └─> Search color-logic.csv
+   └─> Pick colors with: python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<mood>" --domain color
 
 3. What's the content type?
-   └─> Search typography.csv
+   └─> Pick fonts with: python ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<tone>" --domain typography
 
 4. Should it break pattern?
    └─> Check position (1/3, 2/3) → Use full-bleed

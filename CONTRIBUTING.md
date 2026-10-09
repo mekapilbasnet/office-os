@@ -12,10 +12,16 @@ Thanks for your interest in improving **Office OS + Dynamic Routing**.
 
 ## Local validation
 
+Use Python 3.8 or newer.
+
 ```bash
 python3 -m unittest discover -s tests -v
-CLAUDE_CONFIG_DIR=$(mktemp -d) ./install.sh --apply   # test in a throwaway config folder
+
+# Try the installer in a throwaway config folder, never your real ~/.claude
+export CLAUDE_CONFIG_DIR=$(mktemp -d)
+./install.sh --apply
 ./verify.sh
+unset CLAUDE_CONFIG_DIR
 ```
 
 ## Contribution guidelines

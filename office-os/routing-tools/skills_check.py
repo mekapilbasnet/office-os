@@ -14,7 +14,6 @@ from pathlib import Path
 
 SOURCE = Path(__file__).resolve().parent
 REFS = SOURCE.parent / 'references'
-MANIFEST = json.loads((SOURCE / 'manifest.json').read_text(encoding='utf-8'))
 NAME = re.compile(r'^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$|^[a-z]+$')
 TABLE_SECTIONS = ('## Default engineering stack', '## Specialist routing')
 
@@ -32,6 +31,14 @@ def referenced():
     return names
 
 
+def bundled_subagents():
+    """Names of subagents the installer provides; they are agents, not skills."""
+    try:
+        return {p.stem for p in (SOURCE / 'subagents').glob('*.md')}
+    except OSError:
+        return set()
+
+
 def installed(cfg):
     names = set()
     roots = [cfg / 'skills', cfg / 'plugins']
@@ -40,15 +47,40 @@ def installed(cfg):
             continue
         for skill_md in root.rglob('SKILL.md'):
             names.add(skill_md.parent.name)
-            match = re.search(r'^name:\s*(\S+)', skill_md.read_text(encoding='utf-8', errors='replace'), re.M)
-            if match:
-                names.add(match.group(1).split(':')[-1])
+            name = frontmatter_name(skill_md.read_text(encoding='utf-8', errors='replace'))
+            if name:
+                names.add(name.split(':')[-1])
     return names
+
+
+def load_manifest():
+    path = SOURCE / 'manifest.json'
+    try:
+        data = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as error:
+        raise RuntimeError(f'Cannot load {path}: {error}')
+    if not isinstance(data, dict):
+        raise RuntimeError(f'Cannot load {path}: expected a JSON object')
+    return data
+
+
+def frontmatter_name(text):
+    """Return the `name:` value from the leading YAML frontmatter block only."""
+    lines = text.lstrip('\ufeff').splitlines()
+    if not lines or lines[0].strip() != '---':
+        return None
+    for line in lines[1:]:
+        if line.strip() == '---':
+            break
+        match = re.match(r'name:\s*["\']?([^\s"\']+)', line)
+        if match:
+            return match.group(1)
+    return None
 
 
 def removed_mentions():
     hits = []
-    removed = set(MANIFEST.get('removed_skills', []))
+    removed = set(load_manifest().get('removed_skills', []))
     for path in sorted(REFS.glob('*.md')):
         for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
             for token in re.findall(r'`([^`]+)`', line):
@@ -62,13 +94,17 @@ def main():
     ap.add_argument('--config-dir', default=os.environ.get('CLAUDE_CONFIG_DIR') or str(Path.home() / '.claude'))
     ap.add_argument('--check-removed', action='store_true', help='fail if references name a removed skill')
     args = ap.parse_args()
-    hits = removed_mentions()
+    try:
+        hits = removed_mentions()
+    except RuntimeError as error:
+        print('ERROR:', error, file=sys.stderr)
+        return 1
     for hit in hits:
         print('STALE ', hit)
     if args.check_removed:
         return 1 if hits else 0
     have = installed(Path(args.config_dir))
-    want = referenced()
+    want = referenced() - bundled_subagents()
     present = sorted(want & have)
     missing = sorted(want - have)
     print('Installed (' + str(len(present)) + '):', ', '.join(present) or 'none')

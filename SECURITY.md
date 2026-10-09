@@ -6,7 +6,9 @@ The latest published repository state is considered the supported version.
 
 ## Reporting a vulnerability
 
-Please report security issues privately before public disclosure.
+Please report security issues privately before public disclosure, using GitHub private vulnerability reporting:
+
+https://github.com/mekapilbasnet/office-os/security/advisories/new
 
 Include:
 

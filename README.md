@@ -8,7 +8,6 @@
 
 <p align="center">
   <img alt="Status" src="https://img.shields.io/badge/status-beta-orange">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-45%20passed-16a34a">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Claude%20Code-111827">
 </p>
 
@@ -45,55 +44,21 @@ Routing is **on by default** after install. No second skill to set up.
 
 ## Install
 
-Needs: Claude Code, Git, and Python 3 (no extra packages).
-
-**Easiest:** paste this into Claude Code.
-
-```
-Install the Office OS skill from https://github.com/mekapilbasnet/office-os
-— clone it, then run ./install.sh --apply (or install.ps1 --apply on
-Windows), then run ./verify.sh (or .\verify.ps1 on Windows).
-```
-
-**Or by hand (Linux / macOS / WSL):**
+Needs Claude Code, Git and Python 3.8 or newer (no extra packages).
 
 ```bash
-git clone https://github.com/mekapilbasnet/office-os.git
-cd office-os
-./install.sh          # preview only
-./install.sh --apply  # install
-./verify.sh           # check it worked
+git clone https://github.com/mekapilbasnet/office-os.git && cd office-os
+./install.sh --apply   # Windows: .\install.ps1 --apply
+./verify.sh            # Windows: .\verify.ps1
 ```
 
-**Windows PowerShell:**
+Run `./install.sh` without `--apply` first to preview. Then restart Claude Code and run `/office-os`.
 
-```powershell
-git clone https://github.com/mekapilbasnet/office-os.git
-Set-Location office-os
-.\install.ps1          # preview only
-.\install.ps1 --apply  # install
-.\verify.ps1           # check it worked
-```
+Windows blocked by execution policy? Use `powershell -ExecutionPolicy Bypass -File .\install.ps1 --apply`.
 
-Then restart Claude Code and run `/office-os`.
+Your main-model setting is kept if you have one. If you have none, the installer sets `model: sonnet`. Your custom status line is kept.
 
-Files go to `~/.claude`. To use another folder, set `CLAUDE_CONFIG_DIR` or pass `--config-dir`. Your main-model setting and custom status line are kept.
-
-## Update
-
-```bash
-cd office-os
-git pull
-./install.sh          # preview the changes
-./install.sh --apply  # apply them
-./verify.sh
-```
-
-Windows: same steps with `.\install.ps1` and `.\verify.ps1`. Restart Claude Code afterwards.
-
-If you edited an installed file, the installer stops and lists the conflicts. Review them before using `--replace`.
-
-Already have standalone Dynamic Routing? Uninstall it first. See [docs/INSTALLATION.md](docs/INSTALLATION.md).
+Details, updating, Windows execution policy and conflicts: [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ---
 
@@ -105,13 +70,8 @@ Already have standalone Dynamic Routing? Uninstall it first. See [docs/INSTALLAT
 | `/dynamic-routing status` | Show whether routing is on |
 | `/dynamic-routing on` / `off` | Turn routing on or off |
 | `/dynamic-routing profile economy\|balanced\|quality` | Choose cheaper or deeper routing |
-| `/dynamic-routing fallback none\|sonnet\|sonnet-haiku` | Set the fallback chain (applies to all subagents; asks first) |
-| `/dynamic-routing compatibility` | Check your Claude Code setup |
-| `/dynamic-routing usage <path>` | Summarize usage and estimated cost from a Claude Code JSON result |
-| `/dynamic-routing history` | Show opt-in usage summaries |
-| `/dynamic-routing export` | Save your routing preferences to a file |
 
-Full list: [docs/COMMANDS.md](docs/COMMANDS.md).
+Everything else (fallbacks, usage, history, export) is in [docs/COMMANDS.md](docs/COMMANDS.md). To roll back or uninstall, see [Manage / Uninstall](docs/COMMANDS.md#manage--uninstall).
 
 ---
 
@@ -123,20 +83,15 @@ Full list: [docs/COMMANDS.md](docs/COMMANDS.md).
 
 ## Optional extras
 
-**Ponytail** is not bundled. Office OS uses it for broad codebase audits and minimal generated code when it is installed:
+**Ponytail** and **Caveman** are optional and not bundled. Office OS uses them only if you install them: Ponytail for broad codebase audits, Caveman for token compression and lean build, fix and review skills. Install steps: [docs/INSTALLATION.md](docs/INSTALLATION.md#optional-extras).
 
-```
-/plugin marketplace add DietrichGebert/ponytail
-/plugin install ponytail@ponytail
-```
-
-**Design skills** (`brand`, `design`, `ui-ux-pro-max`) live under `skills/`, vendored unmodified from an upstream project. The installer does not install them. See [skills/README.md](skills/README.md) and [skills/THIRD-PARTY-NOTICES.md](skills/THIRD-PARTY-NOTICES.md).
+**Design skills** (`brand`, `design`, `ui-ux-pro-max`) live under `skills/`, vendored from upstream with local patches (see [skills/THIRD-PARTY-NOTICES.md](skills/THIRD-PARTY-NOTICES.md)). The installer does not install them. See [skills/README.md](skills/README.md).
 
 ---
 
 ## Tests
 
-45 offline tests, installer smoke tests, and CI on Linux, macOS and Windows.
+Offline tests, installer smoke tests, and CI on Linux, macOS and Windows.
 
 ```bash
 python3 -m unittest discover -s tests -v

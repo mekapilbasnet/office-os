@@ -1,11 +1,11 @@
 # User-scope Claude Code skills
 
 Available in every project on this machine. Everything here except
-`office-os` (repo root) is vendored from an upstream project — see
-[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for origin, license, and
-version of each pack. Don't hand-edit files inside a vendored skill
-directory; re-pull from upstream instead, so local edits don't silently
-diverge from the source.
+`office-os` (repo root) is vendored from an upstream project and then
+**locally patched** — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for
+origin, license, version, and the full "Local patches" list. Because the files
+are no longer identical to upstream, a re-pull overwrites the patches: after
+updating, re-apply or drop them as described there.
 
 ## ui-ux-pro-max pack
 
@@ -36,11 +36,28 @@ directories — those aren't installed here, so after an update, diff
 `design/references/` against upstream's `slides`/`banner-design` folders by
 hand if you want the latest wording.
 
-Then bump the version row above.
+Then re-apply the local patches listed in `THIRD-PARTY-NOTICES.md` (diff your
+copy against the old one first) and bump the version row above.
 
-### What was audited before install
+### What the scripts do (audited)
 
-No `SessionStart`/`PreToolUse` hooks, no credential or env-var access. The only
-outbound hosts in the shipped scripts are `fonts.googleapis.com`, `pexels.com` and
-`github.com` (font catalogue refresh and stock backgrounds). The `stack/.claude/settings.json`
-in the upstream repo is a sample project template and is **not** installed.
+No `SessionStart`/`PreToolUse` hooks. The scripts are plain Python/Node with no
+network access except where noted:
+
+- **Environment / keys.** The `design` generators read `GEMINI_API_KEY`,
+  `GOOGLE_API_KEY`, `ATLASCLOUD_API_KEY` and `MUAPI_API_KEY` from the
+  environment, and from `KEY=value` lines in `design/.env`,
+  `~/.claude/skills/.env` and `~/.claude/.env`. Only those four names are
+  loaded from those files; every other line is ignored. Keys are sent only to
+  the matching provider.
+- **Outbound hosts.** The Gemini API (`generativelanguage.googleapis.com`, via
+  the `google-genai` package) for logo, CIP and icon generation; `api.atlascloud.ai`
+  and `api.muapi.ai` for the optional logo providers (generated images are
+  downloaded from the HTTPS URL the provider returns, without credentials).
+  The data-refresh tooling in `ui-ux-pro-max` is not vendored, so the font and
+  icon catalogues are never fetched at run time.
+- **Local files.** Scripts write only to the output paths you pass (or the
+  current directory / `assets/` for the brand sync).
+
+The `stack/.claude/settings.json` in the upstream repo is a sample project
+template and is **not** installed.

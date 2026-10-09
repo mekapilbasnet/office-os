@@ -13,7 +13,7 @@ Complete HTML structure with navigation, tokens, and Chart.js integration.
     <title>Presentation Title</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
-        /* Paste embed-tokens.cjs output here */
+        /* Paste your design tokens here (e.g. brand/design-tokens.css or the --design-system palette from ui-ux-pro-max) */
         :root {
             --color-primary: #FF6B6B;
             --color-background: #0D0D0D;

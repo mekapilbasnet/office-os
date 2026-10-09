@@ -4,16 +4,16 @@ This is the on-demand management procedure **inside** `/office-os`, not a second
 
 When a user requests `/office-os routing <command>`:
 
-1. Locate `routing-tools/routing_manager.py` relative to this installed SKILL.md. If missing, use the explicitly provided extracted package; never invent a filesystem path.
-2. Commands: `plan` (default), `install`, `verify`, `diagnose`, `rollback`, `uninstall`, `compatibility`, `profile`, `fallback`, `usage`, or `smoke-test`. For every modifying command, run read-only preview first.
+1. Find `routing_manager.py` in the `routing-tools/` folder next to this file (installed at `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/office-os/routing-tools/`). If missing, use the explicitly provided extracted package; never invent a filesystem path.
+2. Commands: `plan` (default), `install`, `verify`, `diagnose`, `rollback`, `uninstall`, `on`, `off`, `status`, `profile`, `fallback`, `compatibility`, `usage`, `history`, `export`. Options are listed under "Manage / Uninstall" in the repository's `docs/COMMANDS.md`. For every modifying command, run the read-only preview first. `smoke-test` is not a manager command (see step 6).
 3. Linux/macOS/WSL: `python3 <manager> <command>`; Windows: `py -3 <manager> <command>` (or installed Python 3). Respect the user's `--config-dir` if supplied.
 4. Never run `--apply`, `--replace`, `--replace-status-lines`, or `--set-main-model` without approval matching the requested operation. For existing unrelated configuration, prefer to preserve it.
 5. `verify` is static. `diagnose` reads accessible config and flags potential overrides but cannot prove actual runtime model selection. Never print settings secrets or full backups.
-6. For rollback, show the backup and preview first; refuse to clobber later user edits. For smoke-test, read `SMOKE_TESTS.md` beside the manager, do not pass `smoke-test` to it, and obtain permission before live tests that consume model usage.
+6. For rollback, show the backup and preview first; refuse to clobber later user edits. For `/office-os routing smoke-test`, do not run the manager: read `SMOKE_TESTS.md` in this folder, and obtain permission before live tests that consume model usage.
 7. If prior standalone Dynamic Routing is installed, first preview and uninstall it with its original manager; do not stack conflicting always-on policies. The Office OS installer detects and refuses that state. Pristine v3 policy/agents can be upgraded directly.
 8. Don't claim a skill can force the main model, override managed/project settings, or guarantee premium-model approval against manual user overrides.
 
-For everyday Office OS work, see `references/model-routing.md`.
+For everyday Office OS work, see `references/model-routing.md`. Backups: the manager keeps the 20 most recent plus the first install backup (your original settings).
 
 ## Automatic activation and direct on/off commands
 
@@ -25,12 +25,12 @@ Equivalent CLI: `python3 ~/.claude/skills/office-os/routing-tools/routing_manage
 
 - `/dynamic-routing profile economy|balanced|quality`: explicit user selection updates the guarded global rule and state; changes are previewable and reversible. `profile` alone reports current profile.
 - `/dynamic-routing fallback status|none|sonnet|sonnet-haiku`: never silently modify an existing fallback. Changing fallback is opt-in and requires approval because it applies to all subagents. There is no Fable in the proposed chains.
-- `/office-os routing compatibility`: checks the installed CLI's version (recommended >= 2.1.257); use `--strict` for CI on real target hardware.
-- `/office-os routing usage --input result.json [--budget-usd N]`: offline summary from `claude -p --output-format json` result objects; `--record` opt-in stores only sanitized numeric summaries locally. The warning threshold cannot cap billing.
+- `/office-os routing compatibility`: checks the installed CLI's version (recommended >= 2.1.271); use `--strict` for CI on real target hardware.
+- `/dynamic-routing usage <result.json>` (manager: `usage --input result.json [--budget-usd N]`): offline summary from `claude -p --output-format json` result objects; `--record` opt-in stores only sanitized numeric summaries locally. The warning threshold cannot cap billing.
 - The opt-in test runner is `routing-tools/scripts/live_smoke.py`. It requires both `--run` and `--approve-usage` and does not claim per-agent model attribution from aggregate modelUsage.
 
-- `history`: display only sanitized usage snapshots previously recorded by opt-in `usage --record`. This is not an automatic task-decision log.
-- `export --output path.json`: create a nonsecret portable settings snapshot (profile, routing state, and recognized fallback). Import is intentionally manual to avoid overwriting a different computer's local settings.
+- `history [--limit N]`: display only sanitized usage snapshots previously recorded by opt-in `usage --record`. This is not an automatic task-decision log.
+- `export --output path.json`: create a nonsecret portable settings snapshot (profile, routing state, and recognized fallback). It refuses to overwrite an existing file. Import is intentionally manual to avoid overwriting a different computer's local settings.
 
 ## Skill inventory and stale-name check
 
