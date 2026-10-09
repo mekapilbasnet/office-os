@@ -170,6 +170,20 @@ Existing main-model settings and custom status lines are preserved by default.
 Customized package files cause the installer to stop; review the reported
 conflicts before choosing `--replace`.
 
+### Updating an existing installation
+
+```bash
+cd office-os
+git pull
+./install.sh          # preview what will change
+./install.sh --apply  # apply the update
+./verify.sh           # verify
+```
+
+On Windows, use `.\install.ps1`, `.\install.ps1 --apply` and `.\verify.ps1`.
+Restart Claude Code afterwards. Files you customized stop the update; review
+the reported conflicts before choosing `--replace`.
+
 If standalone Dynamic Routing is already installed, preview and uninstall it
 with its own manager before installing this integrated package. See
 [START_HERE.md](START_HERE.md) for upgrade and conflict details.
