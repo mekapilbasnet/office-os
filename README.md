@@ -93,7 +93,7 @@ Windows: same steps with `.\install.ps1` and `.\verify.ps1`. Restart Claude Code
 
 If you edited an installed file, the installer stops and lists the conflicts. Review them before using `--replace`.
 
-Already have standalone Dynamic Routing? Uninstall it first. See [START_HERE.md](START_HERE.md).
+Already have standalone Dynamic Routing? Uninstall it first. See [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ---
 
@@ -146,4 +146,4 @@ On Windows, use `python` or `py`. Static checks do not prove which model Claude 
 
 ## More docs
 
-[Installation](docs/INSTALLATION.md) · [Commands](docs/COMMANDS.md) · [Architecture](docs/ARCHITECTURE.md) · [Publishing to GitHub](docs/GITHUB-PUBLISHING.md) · [Start Here](START_HERE.md) · [Skill behavior](office-os/SKILL.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
+[Installation](docs/INSTALLATION.md) · [Commands](docs/COMMANDS.md) · [Architecture](docs/ARCHITECTURE.md) · [Publishing to GitHub](docs/GITHUB-PUBLISHING.md) · [Skill behavior](office-os/SKILL.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)

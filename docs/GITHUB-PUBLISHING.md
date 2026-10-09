@@ -1,29 +1,21 @@
 # GitHub Publishing Guide
 
-## Suggested repository name
+## Before you publish
 
-`office-os-dynamic-routing`
+- Review `LICENSE` and `SECURITY.md`
+- Confirm the repository name, owner and branding
+- Decide whether it starts public or private
 
-## Before pushing
-
-- Review the `LICENSE` file
-- Review `SECURITY.md`
-- Confirm branding and ownership details
-- Confirm whether you want the repository public or private first
-
-## Basic publish steps
+## Publish
 
 ```bash
-git init
-git add .
-git commit -m "Initial release: Office OS + Dynamic Routing"
-git branch -M main
 git remote add origin <YOUR_GITHUB_REPO_URL>
 git push -u origin main
 ```
 
-## Recommended GitHub setup
+## Recommended setup
 
-- Enable GitHub Actions
-- Add repository topics such as `claude-code`, `ai-tooling`, `developer-tools`, `automation`
-- Add a release tag for your first beta release
+- Keep GitHub Actions enabled (the workflow runs the tests on Linux, macOS and Windows)
+- Add topics such as `claude-code`, `ai-tooling`, `developer-tools`, `automation`
+- Tag a release for each version and copy its notes from `CHANGELOG.md`
+- Issue and pull request templates and `CODEOWNERS` are already in `.github/`

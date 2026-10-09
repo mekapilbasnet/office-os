@@ -1,6 +1,20 @@
-# 1.0.0
+# Changelog
 
-Initial release.
+All notable changes are listed here, newest first.
+
+## [Unreleased]
+
+### Changed
+- Renamed `office-os/routing-tools/agents/` to `subagents/` so it is not confused with `office-os/agents/`. Installed copies keep an unused old `agents` folder after an update; it is safe to delete.
+- Reviewer agent now has 30 turns (was 16) so long reviews finish.
+- Merged the overlapping install guides: details live in `docs/INSTALLATION.md`, `START_HERE.md` is a short pointer.
+- Rewrote the README to be shorter; expanded `docs/ARCHITECTURE.md`.
+- Renamed `tests/test_v43.py` to `tests/test_routing_features.py`.
+
+### Added
+- Update guide, issue and pull request templates, and `CODEOWNERS`.
+
+## [1.0.0] - Initial release
 
 - Added a `skills/` bundle (third-party, vendored unmodified): `brand`, `design`, `ui-ux-pro-max`. See `skills/THIRD-PARTY-NOTICES.md`.
 - Removed `banner-design`, `slides`, `design-system`, `ui-styling`, `superset` from that bundle as redundant or out of scope; `design` already covered banner/slide generation, `ui-ux-pro-max` already covered tokens/components.
@@ -13,12 +27,12 @@ Initial release.
 - Offline per-model usage/cost reports from user-supplied Claude Code result JSON, optional sanitized history, a portable nonsecret config export, and warning threshold.
 - CLI compatibility checker, opt-in paid runtime smoke test, and realistic release checklist.
 - Preserved a single Office OS skill and automatic routing on/off behavior.
-- Added a read-only `reviewer` agent (Sonnet, 30 turns) for independent review of a diff, files, or a plan.
+- Added a read-only `reviewer` agent (Sonnet) for independent review of a diff, files, or a plan.
 - Added a skills check that reports which optional skills named in the routing guide are installed, plus a templates reference.
 
-# Changes
+### Earlier history
 
-## Office OS + Dynamic Routing v4 integration
+#### Office OS + Dynamic Routing v4 integration
 
 - Preserved all original Office OS skill references and agent metadata.
 - Added model routing as an Office OS reference, not a competing second skill.
@@ -28,7 +42,7 @@ Initial release.
 - Blocked accidental simultaneous install over a separately managed standalone Dynamic Routing setup.
 - Preserved existing main model and custom status lines by default.
 
-## v4.2: automatic activation and toggles
+#### v4.2: automatic activation and toggles
 
 - Automatic model routing ON immediately after installation in new sessions.
 - Added `/dynamic-routing off|on|status` control-only command; no second routing skill.

@@ -31,9 +31,9 @@ OWNED = {
 }
 OWNED.update({
     'rules/model-routing.md': '../references/model-routing.md',
-    'agents/Explore.md': 'agents/Explore.md',
-    'agents/deep-reasoner.md': 'agents/deep-reasoner.md',
-    'agents/reviewer.md': 'agents/reviewer.md',
+    'agents/Explore.md': 'subagents/Explore.md',
+    'agents/deep-reasoner.md': 'subagents/deep-reasoner.md',
+    'agents/reviewer.md': 'subagents/reviewer.md',
     'commands/dynamic-routing.md': 'commands/dynamic-routing.md',
 })
 PROFILES = {'economy': 'Avoid unnecessary delegation; use Opus only for unresolved material risk or substantial uncertainty.',

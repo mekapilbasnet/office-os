@@ -35,7 +35,7 @@ class RoutingScenarios(unittest.TestCase):
 
     def test_new_files_are_owned_and_linked(self):
         manifest = json.loads((OFFICE / 'routing-tools/manifest.json').read_text(encoding='utf-8'))
-        for rel in ('references/templates.md', 'routing-tools/agents/reviewer.md', 'routing-tools/skills_check.py'):
+        for rel in ('references/templates.md', 'routing-tools/subagents/reviewer.md', 'routing-tools/skills_check.py'):
             self.assertIn(rel, manifest['owned_office_files'])
             self.assertTrue((OFFICE / rel).is_file())
         self.assertIn('references/templates.md', SKILL)

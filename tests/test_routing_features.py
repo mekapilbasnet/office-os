@@ -12,7 +12,7 @@ MANAGER=ROOT/'office-os/routing-tools/routing_manager.py'
 USAGE=ROOT/'office-os/routing-tools/usage_report.py'
 SMOKE=ROOT/'office-os/routing-tools/scripts/live_smoke.py'
 
-class Version43(unittest.TestCase):
+class RoutingFeatures(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)

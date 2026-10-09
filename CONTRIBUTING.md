@@ -13,9 +13,8 @@ Thanks for your interest in improving **Office OS + Dynamic Routing**.
 ## Local validation
 
 ```bash
-python3 -m pytest tests -q
-./install.sh
-./install.sh --apply
+python3 -m unittest discover -s tests -v
+CLAUDE_CONFIG_DIR=$(mktemp -d) ./install.sh --apply   # test in a throwaway config folder
 ./verify.sh
 ```
 
