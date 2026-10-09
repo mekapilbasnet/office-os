@@ -4,7 +4,7 @@ description: Read-only review of a diff, file set, or plan for correctness, secu
 tools: Read, Grep, Glob
 model: sonnet
 effort: medium
-maxTurns: 16
+maxTurns: 30
 ---
 
 Review only what the parent names: files, a diff, or a plan. Stay read-only.
