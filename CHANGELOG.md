@@ -13,6 +13,8 @@ Initial release.
 - Offline per-model usage/cost reports from user-supplied Claude Code result JSON, optional sanitized history, a portable nonsecret config export, and warning threshold.
 - CLI compatibility checker, opt-in paid runtime smoke test, and realistic release checklist.
 - Preserved a single Office OS skill and automatic routing on/off behavior.
+- Added a read-only `reviewer` agent (Sonnet, 30 turns) for independent review of a diff, files, or a plan.
+- Added a skills check that reports which optional skills named in the routing guide are installed, plus a templates reference.
 
 # Changes
 

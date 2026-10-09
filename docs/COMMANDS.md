@@ -17,3 +17,6 @@
 - `/dynamic-routing fallback sonnet`
 - `/dynamic-routing fallback sonnet-haiku`
 - `/dynamic-routing compatibility`
+- `/dynamic-routing usage <path>` (summarize a Claude Code JSON result; nothing is stored unless you add `--record`)
+- `/dynamic-routing history` (opt-in sanitized usage summaries)
+- `/dynamic-routing export` (write nonsecret routing preferences to a file you name)

@@ -8,7 +8,7 @@
 
 <p align="center">
   <img alt="Status" src="https://img.shields.io/badge/status-beta-orange">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-42%20passed-16a34a">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-45%20passed-16a34a">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Claude%20Code-111827">
 </p>
 
@@ -22,6 +22,7 @@
   - **Haiku** for exploration and lightweight discovery
   - **Sonnet** for ordinary implementation
   - **Opus** for deep reasoning and hard investigations
+  - A read-only **reviewer** agent (Sonnet) for independent checks of a diff, files, or a plan
   - **Fable** only with explicit approval
 - **Live visibility** through status line and subagent status line
 - **Operational controls** for routing on/off, profiles, fallbacks, diagnostics, export, uninstall, and verification
@@ -77,6 +78,7 @@ license, and version.
   - `/dynamic-routing fallback sonnet`
   - `/dynamic-routing fallback sonnet-haiku`
 - Compatibility checks and diagnostics
+- Skills check: reports which optional skills named in the routing guide are installed (advisory only)
 - Usage and estimated cost reporting from exported Claude JSON results
 - Safe upgrade, rollback, uninstall, and conflict protection
 
@@ -215,7 +217,11 @@ See https://github.com/DietrichGebert/ponytail.
 | `/dynamic-routing profile balanced` | Use the recommended default routing behavior |
 | `/dynamic-routing profile quality` | Prefer deeper reasoning |
 | `/dynamic-routing fallback status` | Show current fallback mode |
+| `/dynamic-routing fallback none\|sonnet\|sonnet-haiku` | Set the fallback chain (applies to all subagents; asks first) |
 | `/dynamic-routing compatibility` | Check local Claude Code compatibility |
+| `/dynamic-routing usage <path>` | Summarize usage and estimated cost from a Claude Code JSON result |
+| `/dynamic-routing history` | Show opt-in sanitized usage summaries |
+| `/dynamic-routing export` | Export nonsecret routing preferences to a file |
 
 
 ---
@@ -235,7 +241,7 @@ See https://github.com/DietrichGebert/ponytail.
 
 This repository includes:
 
-- **42 automated tests**
+- **45 automated tests**
 - Offline regression tests
 - Installer smoke tests
 - GitHub Actions workflow for Linux, macOS, and Windows PowerShell
