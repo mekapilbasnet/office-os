@@ -78,7 +78,8 @@ def rule_template():
         return original
     while end < len(lines) and not lines[end].strip():
         end += 1
-    return ''.join(lines[:head + 1] + ['\n'] + lines[end:]).encode('utf-8')
+    newline = '\r\n' if lines[head].endswith('\r\n') else '\n'
+    return ''.join(lines[:head + 1] + [newline] + lines[end:]).encode('utf-8')
 
 
 def active_rule_bytes(enabled, profile=None):

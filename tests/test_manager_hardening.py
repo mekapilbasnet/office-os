@@ -26,7 +26,9 @@ class HardeningCase(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.base = Path(self.tmp.name)
+        # The manager resolves the config dir (macOS /var -> /private/var, Windows 8.3 short names),
+        # so tests build paths from the same resolved location.
+        self.base = Path(self.tmp.name).resolve()
         self.cfg = self.base / '.claude'
         self.env = {k: v for k, v in os.environ.items()
                     if k not in ('CLAUDE_CODE_SUBAGENT_MODEL_FORCE', 'ANTHROPIC_MODEL')}
@@ -349,10 +351,10 @@ class InstallBehaviour(HardeningCase):
             fake = Path(tmp)
             (fake / 'references').mkdir()
             (fake / 'tools').mkdir()
-            (fake / 'references/model-routing.md').write_text('# Title\n\n> note one\n> note two\n\nBody\n\n> keep this quote\n')
+            (fake / 'references/model-routing.md').write_bytes(b'# Title\n\n> note one\n> note two\n\nBody\n\n> keep this quote\n')
             with mock.patch.object(manager, 'SOURCE', fake / 'tools'):
                 self.assertEqual(manager.rule_template().decode(), '# Title\n\nBody\n\n> keep this quote\n')
-            (fake / 'references/model-routing.md').write_text('# Title\n\nBody only\n')
+            (fake / 'references/model-routing.md').write_bytes(b'# Title\n\nBody only\n')
             with mock.patch.object(manager, 'SOURCE', fake / 'tools'):
                 self.assertEqual(manager.rule_template().decode(), '# Title\n\nBody only\n')
 
