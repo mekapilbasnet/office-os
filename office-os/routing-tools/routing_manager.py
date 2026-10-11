@@ -684,7 +684,7 @@ def do_verify(cfg, args):
             errors.append(f'{filename}.md does not specify model {model}')
         if fields.get('tools') != 'Read, Grep, Glob':
             errors.append(f'{filename}.md missing read-only tool list')
-    skill = (raw(cfg / 'skills/office-os/SKILL.md') or b'').decode('utf-8', errors='replace')
+    skill = (raw(cfg / 'skills/office-os/SKILL.md') or b'').decode('utf-8', errors='replace').replace('\r\n', '\n')
     if not skill.startswith('---\n') or 'name: office-os' not in skill or '## Model routing in Claude Code' not in skill:
         errors.append('Office OS skill missing or model-routing integration absent')
     current = read_json(cfg / 'settings.json', default={})

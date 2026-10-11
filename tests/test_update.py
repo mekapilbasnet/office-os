@@ -45,6 +45,8 @@ class UpdateCommand(ConfigDirCase):
         self.upstream = base / 'upstream'
         shutil.copytree(ROOT / 'office-os', self.upstream / 'office-os',
                         ignore=shutil.ignore_patterns('__pycache__'))
+        # Keep LF line endings like the real repository, even where git's autocrlf is on (Windows CI).
+        shutil.copy(ROOT / '.gitattributes', self.upstream / '.gitattributes')
         git('init', '--quiet', cwd=self.upstream)
         git('add', '.', cwd=self.upstream)
         git('commit', '--quiet', '-m', 'initial', cwd=self.upstream)
