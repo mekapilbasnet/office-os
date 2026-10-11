@@ -1,5 +1,5 @@
 ---
-description: Manually enable, disable, or inspect Office OS automatic model routing. Use `/dynamic-routing on`, `/dynamic-routing off`, `/dynamic-routing status`, `/dynamic-routing profile economy|balanced|quality`, `/dynamic-routing fallback status|none|sonnet|sonnet-haiku`, `/dynamic-routing usage <result.json>`, `/dynamic-routing history`, `/dynamic-routing export`, or `/dynamic-routing compatibility`.
+description: Manually enable, disable, or inspect Office OS automatic model routing. Use `/dynamic-routing on`, `/dynamic-routing off`, `/dynamic-routing status`, `/dynamic-routing profile economy|balanced|quality`, `/dynamic-routing fallback status|none|sonnet|sonnet-haiku`, `/dynamic-routing usage <result.json>`, `/dynamic-routing history`, `/dynamic-routing export`, `/dynamic-routing compatibility`, or `/dynamic-routing update [check]`.
 disable-model-invocation: true
 ---
 
@@ -16,6 +16,8 @@ This is a **control-only alias** for the Office OS routing manager. It is not a 
 - `fallback status`: inspect only. `fallback none|sonnet|sonnet-haiku`: first show that this changes user-level fallback settings for **all** subagents; get explicit approval before running the manager with `fallback <choice> --apply`.
 - `usage <path>`: run the manager with `usage --input "<path>"` on an explicitly provided Claude Code JSON output. Always put the path in double quotes, and refuse (run nothing) if it contains shell metacharacters such as `` ` ``, `$`, `;`, `&`, `|`, `<`, `>`, a quote or a newline. Never persist the input or prompts. Record only if the user separately authorizes `--record`.
 - `compatibility`: run the manager with `compatibility` read-only.
+- `update check`: run the manager with `update` (preview only; it may fetch from the remote to count new changes).
+- `update`: run the manager with `update --apply`. The user's command authorizes downloading the newest version into the local copy and reinstalling it. Never add `--replace`, `--replace-status-lines` or `--set-main-model` unless the user separately asks; if the install reports conflicts, show them and stop. Tell the user to restart Claude Code afterwards.
 - `history`: show opt-in sanitized usage summaries (`--limit N` for the newest N, default 10); `export` requires an explicit output file and writes only nonsecret routing preferences.
 - Anything else: explain the supported subcommands without running anything.
 

@@ -47,7 +47,7 @@ Routing is **on by default** after install. No second skill to set up.
 Needs Claude Code, Git and Python 3.8 or newer (no extra packages).
 
 ```bash
-git clone https://github.com/mekapilbasnet/office-os.git && cd office-os
+git clone https://github.com/mekapilbasnet/office-os.git ~/.office-os && cd ~/.office-os
 ./install.sh --apply   # Windows: .\install.ps1 --apply
 ./verify.sh            # Windows: .\verify.ps1
 ```
@@ -70,6 +70,7 @@ Details, updating, Windows execution policy and conflicts: [docs/INSTALLATION.md
 | `/dynamic-routing status` | Show whether routing is on |
 | `/dynamic-routing on` / `off` | Turn routing on or off |
 | `/dynamic-routing profile economy\|balanced\|quality` | Choose cheaper or deeper routing |
+| `/dynamic-routing update` | Download and install the newest version |
 
 Everything else (fallbacks, usage, history, export) is in [docs/COMMANDS.md](docs/COMMANDS.md). To roll back or uninstall, see [Manage / Uninstall](docs/COMMANDS.md#manage--uninstall).
 

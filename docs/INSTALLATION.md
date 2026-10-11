@@ -16,15 +16,16 @@ Easiest: paste this into Claude Code.
 
 ```
 Install the Office OS skill from https://github.com/mekapilbasnet/office-os
-— clone it, then run ./install.sh --apply (or install.ps1 --apply on
-Windows), then run ./verify.sh (or .\verify.ps1 on Windows).
+— clone it into ~/.office-os, then run ./install.sh --apply (or
+install.ps1 --apply on Windows), then run ./verify.sh (or .\verify.ps1
+on Windows).
 ```
 
 Linux / macOS / WSL:
 
 ```bash
-git clone https://github.com/mekapilbasnet/office-os.git
-cd office-os
+git clone https://github.com/mekapilbasnet/office-os.git ~/.office-os
+cd ~/.office-os
 ./install.sh          # preview only
 ./install.sh --apply  # install after reviewing the preview
 ./verify.sh           # static checks
@@ -33,8 +34,8 @@ cd office-os
 Windows PowerShell:
 
 ```powershell
-git clone https://github.com/mekapilbasnet/office-os.git
-Set-Location office-os
+git clone https://github.com/mekapilbasnet/office-os.git "$HOME\.office-os"
+Set-Location "$HOME\.office-os"
 .\install.ps1          # preview only
 .\install.ps1 --apply  # install
 .\verify.ps1           # static checks
@@ -49,17 +50,28 @@ powershell -ExecutionPolicy Bypass -File .\verify.ps1
 
 Restart Claude Code afterwards, then run `/office-os`. Routing applies even if you never type `/office-os`.
 
+`~/.office-os` is the standard folder for the downloaded copy. Cloning somewhere else also works: the installer remembers where it was installed from.
+
 ## Update
 
-```bash
-cd office-os
-git pull
-./install.sh          # preview
-./install.sh --apply
-./verify.sh
+In Claude Code:
+
+```
+/dynamic-routing update
 ```
 
-On Windows use `.\install.ps1` and `.\verify.ps1`. Restart Claude Code afterwards.
+Or from a terminal, from any folder:
+
+```bash
+python3 ~/.claude/skills/office-os/routing-tools/routing_manager.py update           # preview: shows what is new
+python3 ~/.claude/skills/office-os/routing-tools/routing_manager.py update --apply   # download, install, verify
+```
+
+On Windows PowerShell, use `py -3` instead of `python3`. Restart Claude Code afterwards.
+
+The update finds your downloaded copy by itself: first the folder you installed from, then `~/.office-os`. If neither exists, it downloads a fresh copy into `~/.office-os`. It never overwrites a `~/.office-os` folder that is not an Office OS copy.
+
+Updating by hand still works: `git pull` in your copy, then `./install.sh --apply` and `./verify.sh`. Installs made before the `update` command existed need this by-hand update once; that install also records your copy's folder for later updates.
 
 Unchanged files are skipped, changed package files are upgraded with a backup, and your own edits are never overwritten silently.
 

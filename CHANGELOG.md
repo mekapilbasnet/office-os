@@ -5,6 +5,8 @@ All notable changes are listed here, newest first.
 ## [Unreleased]
 
 ### Added
+- `update` command (`/dynamic-routing update`): finds the downloaded copy by itself (the folder installed from, else `~/.office-os`), pulls the newest version, then installs and verifies it. With no local copy it downloads one into `~/.office-os`.
+- Install docs now clone into the standard folder `~/.office-os`; the installer remembers where it was installed from.
 - Update guide, issue and pull request templates, and `CODEOWNERS`.
 - CI: Python 3.8 and 3.13 jobs, bundled-skill tests, pyflakes lint, concurrency and timeouts.
 - Tests for installer hardening, script robustness and bundled-skill fixes.
@@ -24,6 +26,7 @@ All notable changes are listed here, newest first.
 - Bundled skills now carry local patches, listed in `skills/THIRD-PARTY-NOTICES.md`.
 
 ### Fixed
+- Tests no longer fail on macOS and Windows runners because of temp-folder aliases and CRLF line endings; the installed routing rule keeps the file's own line endings.
 - Installer: Ctrl-C mid-change now attempts rollback; interrupted installs uninstall cleanly; clear errors for damaged state files and `verify --claude-native` timeouts; stale status-line commands are refreshed when their Python is gone (user-wrapped commands are left alone); uninstall removes empty folders it created; symlinked `settings.json` is written through; backup/state paths are confined to the config folder; `export` refuses to overwrite; only the last 20 backups (plus the first install backup) are kept; `history --limit` works.
 - Windows installer/verify scripts handle paths with spaces and stream output; shell scripts check for Python 3.8+.
 - Status lines never crash or go blank on malformed input; `live_smoke.py` reads stream-json output (real Task/Agent evidence), handles Windows `claude.cmd`, and no longer passes without delegation evidence; `usage_report.py` handles BOM/UTF-16/bad lines and validates budgets before writing history.

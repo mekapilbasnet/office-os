@@ -28,6 +28,9 @@ LEGACY = MANIFEST['legacy_v3_hashes']
 DEFAULT_PROFILE = MANIFEST['default_profile']
 BACKUP_KEEP = 20  # newest backups retained; older ones are pruned when a new one is created
 STATE_PATH = 'office-os-routing/state.json'
+# OFFICE_OS_REPOSITORY overrides the download address used by `update` (tests use a local repository).
+REPOSITORY = os.environ.get('OFFICE_OS_REPOSITORY') or MANIFEST['repository']
+GIT_TIMEOUT = 300
 RULE_PATH = 'rules/model-routing.md'
 PRIVATE_NAMES = ('settings.json', 'state.json', 'backup.json')  # new files with these names are written 0600
 BACKUP_NAME = re.compile(r'^\d{8}-\d{6}(?:-\d{6})?-[0-9a-f]{8}$')
@@ -350,6 +353,8 @@ def validate_state(cfg, state):
     for key in state['settings_installed']:
         if key not in state['settings_originals']:
             bad(f"settings_installed.{key} has no matching settings_originals entry")
+    if not isinstance(state.get('source', ''), str):
+        bad("'source' must be text")
     if 'created_dirs' in state:  # optional: absent in states written by earlier versions
         if not isinstance(state['created_dirs'], list) or not all(isinstance(d, str) for d in state['created_dirs']):
             bad("'created_dirs' must be a list of text")
@@ -583,7 +588,12 @@ def do_install(cfg, args):
     cfg.mkdir(parents=True, exist_ok=True)
     file_changes = {k: v for k, v in proposed.items() if raw(cfg / k) != v}
     changed_settings = current != updated
+    checkout = checkout_root()
     if not file_changes and not changed_settings and prev_state and prev_state.get('version') == MANIFEST['version']:
+        if checkout and prev_state.get('source') != str(checkout):
+            # Same files from a different copy (moved or re-cloned): only remember where updates come from.
+            prev_state['source'] = str(checkout)
+            save(cfg / STATE_PATH, json_bytes(prev_state))
         print('ALREADY INSTALLED: configuration matches integrated Office OS; no changes or new backups.')
         return
     paths = sorted(set(file_changes) | ({'settings.json'} if changed_settings else set()) | {STATE_PATH})
@@ -629,6 +639,10 @@ def do_install(cfg, args):
     }
     if created_dirs is not None:
         state['created_dirs'] = sorted(created_dirs)
+    # The local copy `update` pulls from; an install run by the installed manager keeps the last known one.
+    source = str(checkout) if checkout else (prev_state or {}).get('source')
+    if source:
+        state['source'] = source
 
     def apply(back):
         state['last_backup'] = str(back)
@@ -1067,9 +1081,109 @@ def do_uninstall(cfg, args):
     print(f'UNINSTALLED. Rollback backup is retained: {back}')
 
 
+def is_checkout(folder):
+    """A git copy of this repository that `update` can pull and install from."""
+    return (folder / '.git').exists() and (folder / 'office-os/routing-tools/routing_manager.py').is_file()
+
+
+def checkout_root():
+    """The git copy this manager runs from, or None for the installed copy under the config dir."""
+    root = OFFICE.parent
+    return root if is_checkout(root) else None
+
+
+def standard_source():
+    """Where `update` keeps its own copy when no other local copy is known."""
+    return Path.home() / '.office-os'
+
+
+def find_source(state):
+    """The local copy to update from: the one recorded at install, this one, then the standard folder."""
+    candidates = [Path(state['source'])] if state.get('source') else []
+    candidates += [c for c in (checkout_root(), standard_source()) if c]
+    for folder in candidates:
+        if is_checkout(folder):
+            return folder.resolve()
+    return None
+
+
+def git(*args, folder=None):
+    exe = shutil.which('git')
+    if not exe:
+        raise RuntimeError('Git was not found. Install Git (https://git-scm.com/downloads) and rerun.')
+    command = [exe] + (['-C', str(folder)] if folder else []) + list(args)
+    env = dict(os.environ, GIT_TERMINAL_PROMPT='0')  # never hang on a password prompt
+    try:
+        return subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace',
+                              env=env, timeout=GIT_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f'git {args[0]} took longer than {GIT_TIMEOUT} seconds; check your network and rerun.')
+
+
+def git_ok(*args, folder=None):
+    result = git(*args, folder=folder)
+    if result.returncode != 0:
+        where = f' in {folder}' if folder else ''
+        raise RuntimeError(f'git {args[0]} failed{where}:\n  ' + (result.stderr or result.stdout).strip().replace('\n', '\n  '))
+    return result.stdout.strip()
+
+
+def do_update(cfg, args):
+    """Pull the newest Office OS into its local copy, then install and verify from that copy."""
+    state = load_state(cfg)
+    if not state:
+        raise RuntimeError('Office OS is not installed here. Install it first (see docs/INSTALLATION.md).')
+    source = find_source(state)
+    standard = standard_source()
+    if source is None and standard.exists() and any(standard.iterdir()):
+        raise RuntimeError(f'{standard} exists but is not an Office OS git copy. Move it aside and rerun.')
+    if not args.apply:
+        if source is None:
+            print(f'NO LOCAL COPY found. Would download {REPOSITORY} into {standard}, then install it.')
+        else:
+            print(f'LOCAL COPY  {source}')
+            if git('fetch', '--quiet', folder=source).returncode != 0:
+                print('NOTE      Could not check for new changes (offline or no access).')
+            else:
+                behind = git('rev-list', '--count', 'HEAD..@{u}', folder=source)
+                if behind.returncode != 0:
+                    print('NOTE      This copy does not track a remote branch; cannot tell what is new.')
+                elif behind.stdout.strip() == '0':
+                    print('UP TO DATE  No new changes to download.')
+                else:
+                    print(f'AVAILABLE   {behind.stdout.strip()} new change(s) to download.')
+            if git_ok('status', '--porcelain', '--untracked-files=no', folder=source):
+                print('NOTE      This copy has local edits; download stops if they clash with new changes.')
+        print('PREVIEW ONLY. Rerun with update --apply to download, install and verify.')
+        return 0
+    if source is None:
+        print(f'DOWNLOADING {REPOSITORY} into {standard}')
+        git_ok('clone', REPOSITORY, str(standard))
+        source = standard.resolve()
+        changed = True
+    else:
+        print(f'UPDATING    {source}')
+        before = git_ok('rev-parse', 'HEAD', folder=source)
+        git_ok('pull', '--ff-only', folder=source)
+        changed = git_ok('rev-parse', 'HEAD', folder=source) != before
+    # Run the freshly downloaded manager, not this (possibly older) one.
+    manager = source / 'office-os/routing-tools/routing_manager.py'
+    extra = [flag for flag, on in (('--replace', args.replace), ('--replace-status-lines', args.replace_status_lines),
+                                   ('--set-main-model', args.set_main_model)) if on]
+    for step in (['install', '--apply'] + extra, ['verify']):
+        result = subprocess.run([sys.executable, str(manager), *step, '--config-dir', str(cfg)])
+        if result.returncode != 0:
+            return result.returncode
+    if changed:
+        print('UPDATED. Restart Claude Code to load the new version.')
+    else:
+        print('UP TO DATE: no newer version was available.')
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description='Office OS routing manager (preview unless --apply)')
-    ap.add_argument('command', nargs='?', choices=['plan', 'install', 'verify', 'diagnose', 'rollback', 'uninstall', 'on', 'off', 'status', 'profile', 'fallback', 'compatibility', 'usage', 'history', 'export'], default='plan')
+    ap.add_argument('command', nargs='?', choices=['plan', 'install', 'update', 'verify', 'diagnose', 'rollback', 'uninstall', 'on', 'off', 'status', 'profile', 'fallback', 'compatibility', 'usage', 'history', 'export'], default='plan')
     ap.add_argument('value', nargs='?', help='Profile: economy/balanced/quality or fallback: none/sonnet/sonnet-haiku')
     ap.add_argument('--output', help='Destination for sanitized routing configuration export')
     ap.add_argument('--input', help='Claude Code JSON or JSONL result path (usage command)')
@@ -1092,6 +1206,8 @@ def main():
             print('PREVIEW ONLY. Run install --apply after reviewing changes.')
         elif args.command == 'install':
             do_install(cfg, args)
+        elif args.command == 'update':
+            return do_update(cfg, args)
         elif args.command == 'on':
             do_toggle(cfg, True, args.apply)
         elif args.command == 'off':

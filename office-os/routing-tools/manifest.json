@@ -1,6 +1,7 @@
 {
   "name": "office-os-integrated-dynamic-routing",
   "version": "1.0.0-office",
+  "repository": "https://github.com/mekapilbasnet/office-os.git",
   "default_main_model": "sonnet",
   "agents": {
     "Explore": "haiku",

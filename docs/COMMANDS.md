@@ -22,6 +22,8 @@ The `/office:*` workflow names (for example `/office:bug` or `/office:release`) 
 | `/dynamic-routing fallback status` | Show the fallback chain |
 | `/dynamic-routing fallback none\|sonnet\|sonnet-haiku` | Set the fallback chain. Applies to all subagents, so it asks first |
 | `/dynamic-routing compatibility` | Check your Claude Code version |
+| `/dynamic-routing update` | Download the newest version into your local copy, then install and verify it |
+| `/dynamic-routing update check` | Only show whether a newer version exists |
 | `/dynamic-routing usage <path>` | Summarize usage and estimated cost from a Claude Code JSON result. Nothing is stored unless you add `--record` |
 | `/dynamic-routing history` | Show opt-in usage summaries you recorded earlier |
 | `/dynamic-routing export` | Save routing preferences (no secrets) to a new file you name |
@@ -46,6 +48,7 @@ Anything that changes files is a **preview** until you add `--apply`.
 |---|---|
 | `plan` | Preview what an install would change (the default) |
 | `install --apply` | Install or upgrade. Same as `./install.sh --apply` |
+| `update [--apply]` | Pull the newest version into the local copy (the one installed from, else `~/.office-os`; downloaded there if missing), then install and verify |
 | `verify` | Static check of the installed files. It does not prove which model ran |
 | `diagnose` | Look for settings that could override routing, and report conflicts |
 | `status` | Show whether routing is on or off |
