@@ -48,8 +48,16 @@ Needs Claude Code, Git and Python 3.8 or newer (no extra packages).
 
 ```bash
 git clone https://github.com/mekapilbasnet/office-os.git ~/.office-os && cd ~/.office-os
-./install.sh --apply   # Windows: .\install.ps1 --apply
-./verify.sh            # Windows: .\verify.ps1
+./install.sh --apply
+./verify.sh
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/mekapilbasnet/office-os.git "$HOME\.office-os"; Set-Location "$HOME\.office-os"
+.\install.ps1 --apply
+.\verify.ps1
 ```
 
 Run `./install.sh` without `--apply` first to preview. Then restart Claude Code and run `/office-os`.
@@ -58,7 +66,9 @@ Windows blocked by execution policy? Use `powershell -ExecutionPolicy Bypass -Fi
 
 Your main-model setting is kept if you have one. If you have none, the installer sets `model: sonnet`. Your custom status line is kept.
 
-Details, updating, Windows execution policy and conflicts: [docs/INSTALLATION.md](docs/INSTALLATION.md).
+**Update:** run `/dynamic-routing update` in Claude Code. It finds your copy by itself (the folder you installed from, else `~/.office-os`), downloads the newest version, installs and verifies it. Installed before this command existed? Run `git pull` and `./install.sh --apply` in your copy once.
+
+Details, Windows execution policy and conflicts: [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ---
 
